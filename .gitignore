@@ -1,0 +1,10 @@
+/build/
+/external/JUCE/
+/external/rnnoise/
+/tests/output/
+/tools/local/
+*.user
+.DS_Store
+/build*-log.txt
+/build-log.txt
+__pycache__/

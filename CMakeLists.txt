@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.22)
+project(VocalPure VERSION 0.3.0 LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+enable_testing()
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/JUCE/CMakeLists.txt")
+  message(FATAL_ERROR "Clone JUCE 8.0.6 into external/JUCE; see docs/build.md")
+endif()
+add_subdirectory(external/JUCE)
+include(cmake/RNNoise.cmake)
+set(formats VST3 Standalone)
+if(APPLE)
+  list(APPEND formats AU)
+endif()
+juce_add_plugin(VocalPure COMPANY_NAME "VocalPure" BUNDLE_ID "audio.vocalpure.plugin"
+  PLUGIN_MANUFACTURER_CODE Vcpr PLUGIN_CODE Vp01 FORMATS ${formats}
+  PRODUCT_NAME "VocalPure" IS_SYNTH FALSE NEEDS_MIDI_INPUT FALSE NEEDS_MIDI_OUTPUT FALSE
+  IS_MIDI_EFFECT FALSE EDITOR_WANTS_KEYBOARD_FOCUS FALSE COPY_PLUGIN_AFTER_BUILD FALSE)
+target_sources(VocalPure PRIVATE src/PluginProcessor.cpp src/PluginEditor.cpp src/audio/AudioEngine.cpp src/ai/RNNoiseEngine.cpp)
+target_include_directories(VocalPure PUBLIC src)
+target_compile_definitions(VocalPure PUBLIC JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0)
+target_link_libraries(VocalPure PRIVATE juce::juce_audio_utils juce::juce_dsp
+  PUBLIC vocalpure_rnnoise juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+juce_add_console_app(VocalPureTests PRODUCT_NAME "VocalPure Tests")
+target_sources(VocalPureTests PRIVATE tests/FoundationTests.cpp)
+target_link_libraries(VocalPureTests PRIVATE VocalPure juce::juce_audio_utils juce::juce_dsp)
+add_test(NAME foundation COMMAND VocalPureTests)
