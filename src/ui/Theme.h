@@ -19,12 +19,33 @@ public:
     void drawRotarySlider(juce::Graphics& g,int x,int y,int width,int height,float position,
                           float start,float end,juce::Slider& slider) override
     {
-        auto bounds=juce::Rectangle<float>(float(x),float(y),float(width),float(height)).reduced(12);
-        const auto centre=bounds.getCentre(); const float radius=juce::jmin(bounds.getWidth(),bounds.getHeight())*0.5f;
+        const bool main=slider.getName()=="Noise reduction";
+        auto bounds=juce::Rectangle<float>(float(x),float(y),float(width),float(height)).reduced(main?6.0f:12.0f);
+        const auto centre=bounds.getCentre();
+        // Reserve space for the rotating skirt at every angle, including the endpoints.
+        const float radius=juce::jmin(bounds.getWidth(),bounds.getHeight())*(main?0.43f:0.5f);
         const float angle=start+position*(end-start),stroke=radius>75?7.0f:4.0f;
         const float alpha=slider.isEnabled()?1.0f:0.35f;
-        const bool main=slider.getName()=="Noise reduction";
         const auto disc=juce::Rectangle<float>(centre.x-radius,centre.y-radius,radius*2,radius*2);
+        if(main)
+        {
+            const juce::Point<float> direction(std::sin(angle),-std::cos(angle));
+            const juce::Point<float> tangent(std::cos(angle),std::sin(angle));
+            const auto tip=centre+direction*(radius*1.20f);
+            const auto left=centre+direction*(radius*0.70f)-tangent*(radius*0.70f);
+            const auto right=centre+direction*(radius*0.70f)+tangent*(radius*0.70f);
+            juce::Path skirt;
+            skirt.startNewSubPath(left); skirt.lineTo(tip); skirt.lineTo(right); skirt.closeSubPath();
+            juce::DropShadow(juce::Colours::black.withAlpha(0.45f),12,{4,7}).drawForPath(g,skirt);
+            g.setGradientFill(juce::ColourGradient(juce::Colour(0xff64217d),left,
+                                                  juce::Colour(0xffff22e8),right,false));
+            g.fillPath(skirt);
+            g.setColour(juce::Colour(0xfff79bec).withAlpha(0.5f));
+            g.drawLine({left,tip},1.2f);
+            // The dark radial notch is the position marker; the skirt sits under the rim.
+            g.setColour(juce::Colour(0xff27102e));
+            g.drawLine({centre+direction*(radius*0.96f),centre+direction*(radius*1.175f)},radius*0.030f);
+        }
         g.setColour(juce::Colours::black.withAlpha(0.18f)); g.fillEllipse(disc.translated(4,7).expanded(6));
         g.setGradientFill(juce::ColourGradient(juce::Colour(0xffb2e6e6),disc.getX(),disc.getY(),
                                               juce::Colour(0xffa33fc4),disc.getRight(),disc.getBottom(),false));
@@ -52,6 +73,8 @@ public:
                                                    juce::Colour(0xee090d17),centre.x+radius*0.3f,centre.y,true));
             g.fillEllipse(disc.withSizeKeepingCentre(radius*0.72f,radius*0.72f));
         }
+        if(!main)
+        {
         juce::Path track,arc;
         track.addCentredArc(centre.x,centre.y,radius,radius,0,start,end,true);
         arc.addCentredArc(centre.x,centre.y,radius,radius,0,start,angle,true);
@@ -61,18 +84,13 @@ public:
         g.strokePath(arc,juce::PathStrokeType(stroke,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
         const float dotX=centre.x+std::sin(angle)*radius,dotY=centre.y-std::cos(angle)*radius;
         g.setColour(juce::Colour(0xffc6fff3).withAlpha(alpha)); g.fillEllipse(dotX-5,dotY-5,10,10);
+        }
         if(main)
         {
-            juce::Path pointer;
-            const juce::Point<float> direction(std::sin(angle),-std::cos(angle)),tangent(std::cos(angle),std::sin(angle));
-            pointer.startNewSubPath(centre+direction*(radius+10));
-            pointer.lineTo(centre+direction*(radius-15)+tangent*10);
-            pointer.lineTo(centre+direction*(radius-15)-tangent*10); pointer.closeSubPath();
-            g.setColour(juce::Colour(0xfffd53ed)); g.fillPath(pointer);
             g.setColour(juce::Colour(0xfffceaff)); g.setFont(radius*0.27f);
             g.drawText(juce::String(int(std::round(slider.getValue())))+"%",bounds,juce::Justification::centred);
         }
         if(slider.isMouseOverOrDragging() || slider.hasKeyboardFocus(true))
-        { g.setColour(juce::Colour(0xff6aebda).withAlpha(0.35f)); g.drawEllipse(bounds.reduced(12),1.2f); }
+        { g.setColour(juce::Colour(0xff6aebda).withAlpha(0.35f)); g.drawEllipse(disc.reduced(8),1.2f); }
     }
 };

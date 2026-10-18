@@ -20,3 +20,8 @@ DSP, parametros, presets, persistencia, latencia e calculo FFT nao foram alterad
 Build Windows VST3/Standalone e regressao automatizada aprovados. Layout inspecionado no aplicativo.
 O commit posterior de redesign pode ser revertido para retornar ao checkpoint; reconstruir os binarios
 apos qualquer rollback. Dependencias e audios do usuario ficam fora do Git.
+
+Refino do indicador: aba triangular magenta desenhada sob o aro, com sombra, gradiente
+e entalhe radial escuro. Substitui a pequena seta, o ponto e o arco de progresso do
+controle principal. A aba acompanha o valor real e tem espaco reservado em toda a rotacao.
+Base anterior a este refino: `2a72bed`.
