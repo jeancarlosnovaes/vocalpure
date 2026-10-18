@@ -15,7 +15,7 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
     }
     input.setName("Input gain"); output.setName("Output gain"); reduction.setName("Noise reduction"); width.setName("Stereo width");
     reduction.setTextBoxStyle(juce::Slider::NoTextBox,false,0,0); reduction.setTextValueSuffix(" %"); reduction.setDoubleClickReturnValue(true,65);
-    reduction.setTooltip("Real RNNoise processing. 0%: aligned dry signal. 100%: neural output. Intermediate values blend both.");
+    reduction.setTooltip("Drag to adjust reduction: grey 0%, pink 100%. The moving centre shows the real input spectrum. Double-click: 65%.");
     width.setTextValueSuffix(" %"); width.setDoubleClickReturnValue(true,100);
     width.setTooltip("Mid/side width. 0% mono, 100% original width, 200% double side. No effect on mono input.");
     for(size_t i=0;i<factoryPresets.size();++i) presets.addItem(factoryPresets[i].name,int(i)+1);
@@ -23,6 +23,7 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
     presets.onChange=[this] { if(presets.getSelectedId()>0) { saveUndo(); selectedPreset=presets.getSelectedId()-1; processor.applyPreset(selectedPreset); } };
     views.addItem("COMPARE",3); views.addItem("INPUT",1); views.addItem("OUTPUT",2); views.setSelectedId(3);
     views.setName("Spectrum view"); views.onChange=[this]{spectrum.view=views.getSelectedId(); spectrum.repaint();};
+    reset.setName("Reset parameters"); reset.setTooltip("Restore default settings");
     reset.onClick=[this]{saveUndo(); processor.resetParameters(); selectedPreset=-1; presets.setSelectedId(0,juce::dontSendNotification);};
     undo.setEnabled(false); undo.setTooltip("Undo the last preset or reset. Slider automation is managed by the host.");
     undo.onClick=[this]
@@ -76,22 +77,24 @@ void VocalPureEditor::paint(juce::Graphics& g)
     g.setGradientFill(juce::ColourGradient(juce::Colour(0x77521588),500,350,juce::Colour(0x00481983),870,540,false)); g.fillPath(shadow);
     g.setColour(juce::Colour(0xff10151c)); g.fillRect(0,0,1000,42);
     g.setColour(juce::Colour(0xff7bdfe4)); g.fillRect(0,42,1000,2);
-    auto text=[&](juce::String t,int x,int y,int w,int h,float font,juce::Colour colour)
-    { g.setColour(colour); g.setFont(font); g.drawText(t,x,y,w,h,juce::Justification::centredLeft); };
+    auto text=[&](juce::String t,int x,int y,int w,int h,float font,juce::Colour colour,
+                 juce::Justification align=juce::Justification::centredLeft)
+    { g.setColour(colour); g.setFont(font); g.drawText(t,x,y,w,h,align); };
     const juce::Colour dark(0xff073c50),white(0xffecffff);
     text("V O C A L P U R E",42,65,400,40,28,dark);
     text("LOCAL NEURAL AUDIO",734,72,240,30,17,dark);
     text("0.3.0",44,107,120,18,11,dark);
-    text("NEURAL ENGINE",45,219,230,26,17,white);
+    text("NEURAL ENGINE",40,219,235,26,17,white,juce::Justification::centred);
     g.setColour(juce::Colour(0xff8be1e6)); g.fillRoundedRectangle(40,252,235,57,28);
     g.setColour(juce::Colour(0xff101b22)); g.fillRoundedRectangle(44,256,227,49,24);
-    text("RNNoise",65,263,190,34,25,white);
-    text("ANALYSIS",46,332,150,22,15,white); text("WIDTH",210,332,90,22,15,white);
+    text("RNNoise",44,263,227,34,25,white,juce::Justification::centred);
+    text("ANALYSIS",40,332,144,22,15,white,juce::Justification::centred);
+    text("WIDTH",196,332,94,22,15,white,juce::Justification::centred);
     g.setColour(juce::Colour(0xff8be1e6)); g.fillRoundedRectangle(40,366,144,52,25);
     g.setColour(juce::Colour(0xff10232d)); g.fillRoundedRectangle(44,370,136,44,22);
-    text(processor.getTotalNumInputChannels()==1?"MONO":"DUAL",76,380,100,24,20,white);
-    text("NOISE REDUCTION",442,110,225,24,15,white);
-    text("LIVE SPECTRUM",781,180,190,22,14,white);
+    text(processor.getTotalNumInputChannels()==1?"MONO":"DUAL",44,380,136,24,20,white,juce::Justification::centred);
+    text("NOISE REDUCTION",324,110,400,24,15,white,juce::Justification::centred);
+    text("LIVE SPECTRUM",747,180,226,22,14,white,juce::Justification::centred);
     g.setColour(juce::Colour(0xff101e2c).withAlpha(0.95f)); g.fillRoundedRectangle(20,489,960,51,12);
     g.setColour(juce::Colour(0xffeb69e2)); g.fillEllipse(788,449,5,5); text("IN",800,442,30,18,10,white);
     g.setColour(juce::Colour(0xffa4fff5)); g.fillEllipse(851,449,5,5); text("OUT",864,442,40,18,10,white);
@@ -102,7 +105,7 @@ void VocalPureEditor::resized()
     auto place=[&](juce::Component& c,int x,int y,int w,int h){c.setBounds(juce::Rectangle<float>(float(x)*sx,float(y)*sy,float(w)*sx,float(h)*sy).toNearestInt());};
     place(undo,16,7,82,28); place(presets,112,7,330,28); place(compare,469,7,225,28);
     place(settings,732,7,74,28); place(bypass,845,7,140,28);
-    place(reset,108,155,88,42); place(width,196,354,94,105);
+    place(reset,131,155,52,46); place(width,196,354,94,105);
     place(reduction,324,126,400,340); place(voice,365,466,315,20);
     place(spectrum,747,211,226,226); place(views,780,459,165,26);
     place(inputMeter,37,497,187,37); place(input,243,491,85,43);
@@ -116,6 +119,7 @@ void VocalPureEditor::timerCallback()
     // Drain bounded queue to the newest complete snapshot; FFT runs only here.
     for(int i=0;i<SpectrumQueue::capacity;++i) { if(!processor.engine.spectrum.pop(frame)) break; found=true; }
     if(found) { spectrum.update(frame); emptyTicks=0; } else if(++emptyTicks==15) spectrum.clearDisplay();
+    if(found || emptyTicks==15) { theme.spectrumLevels=spectrum.radialLevels(); reduction.repaint(); }
     const float in=processor.engine.inputPeak.load(),out=processor.engine.outputPeak.load();
     inputMeter.update(emptyTicks<15?in:0); outputMeter.update(emptyTicks<15?out:0);
     voice.setText("VOICE PROBABILITY  "+juce::String(emptyTicks<15?int(processor.engine.voiceProbability.load()*100):0)+"%",juce::dontSendNotification);

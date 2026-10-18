@@ -13,6 +13,23 @@ public:
         repaint();
     }
     void clearDisplay() { in.fill(-100); out.fill(-100); repaint(); }
+    // Reuse the input FFT already computed on the UI thread for the central display.
+    std::array<float,32> radialLevels() const
+    {
+        std::array<float,32> levels {};
+        const double top=juce::jmin(20000.0,analyzer.rate/2);
+        for(size_t i=0;i<levels.size();++i)
+        {
+            const double lo=20*std::pow(top/20,double(i)/levels.size());
+            const double hi=20*std::pow(top/20,double(i+1)/levels.size());
+            const int a=juce::jlimit(1,SpectrumAnalyzer::bins-1,int(lo*SpectrumQueue::size/analyzer.rate));
+            const int b=juce::jlimit(a,SpectrumAnalyzer::bins-1,int(hi*SpectrumQueue::size/analyzer.rate));
+            float db=-100;
+            for(int k=a;k<=b;++k) db=juce::jmax(db,in[size_t(k)]);
+            levels[i]=juce::jlimit(0.0f,1.0f,(db+72)/66);
+        }
+        return levels;
+    }
     void paint(juce::Graphics& g) override
     {
         const float diameter=float(juce::jmin(getWidth(),getHeight()))-14;

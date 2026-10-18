@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "dsp/SpectrumAnalyzer.h"
+#include "ui/SpectrumDisplay.h"
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <iostream>
 #include <fstream>
@@ -172,6 +173,21 @@ void phase3Tests()
     SpectrumAnalyzer fft; fft.analyse(frame);
     require(std::abs(fft.input[64]+6.0206f)<0.05f,"Input FFT calibration or stereo cancellation error");
     require(std::abs(fft.output[64]+12.0412f)<0.05f,"Output FFT calibration error");
+    SpectrumDisplay display;
+    auto radial=display.radialLevels();
+    require(*std::max_element(radial.begin(),radial.end())==0,"Idle radial spectrum must be silent");
+    for(int i=0;i<12;++i) display.update(frame);
+    radial=display.radialLevels();
+    const auto peak=std::max_element(radial.begin(),radial.end());
+    require(*peak>0.95f,"Radial spectrum did not react to input tone");
+    const int expectedBand=int(std::log(1500.0/20)/std::log(20000.0/20)*32);
+    require(std::abs(int(peak-radial.begin())-expectedBand)<=1,"Radial frequency mapping failed");
+    for(auto& channel:frame.samples) channel.fill(0);
+    for(int i=0;i<20;++i) display.update(frame);
+    radial=display.radialLevels();
+    require(*std::max_element(radial.begin(),radial.end())==0,"Radial spectrum animates in silence");
+    display.clearDisplay(); radial=display.radialLevels();
+    require(*std::max_element(radial.begin(),radial.end())==0,"Radial spectrum retained stale activity");
     for(float w:{0.0f,100.0f,200.0f})
     {
         VocalPureProcessor p; set(p,"width",w); prepare(p,48000,2,0);

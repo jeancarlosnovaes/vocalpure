@@ -3,6 +3,7 @@
 class VocalTheme final : public juce::LookAndFeel_V4
 {
 public:
+    std::array<float,32> spectrumLevels {};
     VocalTheme()
     {
         setColour(juce::Slider::textBoxTextColourId,juce::Colour(0xffdfe9f0));
@@ -16,6 +17,21 @@ public:
         setColour(juce::ToggleButton::tickColourId,juce::Colour(0xff59ead2));
         setColour(juce::PopupMenu::backgroundColourId,juce::Colour(0xff182734));
     }
+    void drawButtonText(juce::Graphics& g,juce::TextButton& button,bool highlighted,bool down) override
+    {
+        if(button.getName()!="Reset parameters")
+        { juce::LookAndFeel_V4::drawButtonText(g,button,highlighted,down); return; }
+        const auto centre=button.getLocalBounds().toFloat().getCentre();
+        const float r=juce::jmin(float(button.getWidth()),float(button.getHeight()))*0.28f;
+        juce::Path arrow;
+        arrow.addCentredArc(centre.x,centre.y,r,r,0,-0.65f,4.7f,true);
+        g.setColour(juce::Colour(0xffe6ffff));
+        g.strokePath(arrow,juce::PathStrokeType(2.6f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+        const juce::Point<float> tip(centre.x+std::sin(-0.65f)*r,centre.y-std::cos(-0.65f)*r);
+        juce::Path head;
+        head.startNewSubPath(tip+juce::Point<float>(-2,-5)); head.lineTo(tip+juce::Point<float>(-3,4));
+        head.lineTo(tip+juce::Point<float>(6,3)); head.closeSubPath(); g.fillPath(head);
+    }
     void drawRotarySlider(juce::Graphics& g,int x,int y,int width,int height,float position,
                           float start,float end,juce::Slider& slider) override
     {
@@ -27,6 +43,12 @@ public:
         const float angle=start+position*(end-start),stroke=radius>75?7.0f:4.0f;
         const float alpha=slider.isEnabled()?1.0f:0.35f;
         const auto disc=juce::Rectangle<float>(centre.x-radius,centre.y-radius,radius*2,radius*2);
+        const juce::ColourGradient rim(juce::Colour(0xff64b9c5),disc.getX(),centre.y,
+                                       juce::Colour(0xffed22d3),disc.getRight(),centre.y,false);
+        const auto pointerColour=rim.getColourAtPosition((std::sin(angle)+1.0f)*0.5f);
+        const auto coreColour=juce::Colour(0xff797b83).interpolatedWith(juce::Colour(0xffef23da),position);
+        float activity=0;
+        for(auto level:spectrumLevels) activity=juce::jmax(activity,level);
         if(main)
         {
             const juce::Point<float> direction(std::sin(angle),-std::cos(angle));
@@ -37,41 +59,42 @@ public:
             juce::Path skirt;
             skirt.startNewSubPath(left); skirt.lineTo(tip); skirt.lineTo(right); skirt.closeSubPath();
             juce::DropShadow(juce::Colours::black.withAlpha(0.45f),12,{4,7}).drawForPath(g,skirt);
-            g.setGradientFill(juce::ColourGradient(juce::Colour(0xff64217d),left,
-                                                  juce::Colour(0xffff22e8),right,false));
+            g.setGradientFill(juce::ColourGradient(pointerColour.darker(0.22f),left,
+                                                  pointerColour,tip,false));
             g.fillPath(skirt);
-            g.setColour(juce::Colour(0xfff79bec).withAlpha(0.5f));
+            g.setColour(pointerColour.brighter(0.35f).withAlpha(0.5f));
             g.drawLine({left,tip},1.2f);
             // The dark radial notch is the position marker; the skirt sits under the rim.
             g.setColour(juce::Colour(0xff27102e));
             g.drawLine({centre+direction*(radius*0.96f),centre+direction*(radius*1.175f)},radius*0.030f);
         }
         g.setColour(juce::Colours::black.withAlpha(0.18f)); g.fillEllipse(disc.translated(4,7).expanded(6));
-        g.setGradientFill(juce::ColourGradient(juce::Colour(0xffb2e6e6),disc.getX(),disc.getY(),
-                                              juce::Colour(0xffa33fc4),disc.getRight(),disc.getBottom(),false));
+        g.setGradientFill(rim);
         g.fillEllipse(disc.expanded(main?5.0f:3.0f));
         g.setColour(juce::Colour(0xff081317)); g.fillEllipse(disc);
-        g.setGradientFill(juce::ColourGradient(main?juce::Colour(0xffb920cf):juce::Colour(0xff234657),centre.x,centre.y,
+        g.setGradientFill(juce::ColourGradient(main?coreColour.withMultipliedBrightness(0.32f+activity*0.68f):juce::Colour(0xff234657),centre.x,centre.y,
                                               juce::Colour(0xff090d17),centre.x+radius*0.89f,centre.y,true));
         g.fillEllipse(disc.reduced(main?10.0f:5.0f));
         if(main)
         {
-            // Static original mesh ornament, not an indication of neural activity.
-            std::array<juce::Point<float>,15> points;
+            // Log-frequency input spectrum: each vertex follows a measured FFT band.
+            std::array<juce::Point<float>,32> points;
             for(size_t i=0;i<points.size();++i)
             { const float a=float(i)*juce::MathConstants<float>::twoPi/float(points.size());
-              const float r=radius*(0.47f+0.22f*std::sin(float(i)*2.3f));
+              const float r=radius*(0.22f+0.54f*spectrumLevels[i]);
               points[i]={centre.x+std::sin(a)*r,centre.y+std::cos(a)*r}; }
             for(size_t i=0;i<points.size();++i)
             {
-                g.setColour(juce::Colour(0xfff7a0fb).withAlpha(0.24f));
+                g.setColour(coreColour.brighter(0.7f).withAlpha(0.55f*activity));
                 g.drawLine({points[i],points[(i+1)%points.size()]},1.1f);
                 g.drawLine({points[i],points[(i+4)%points.size()]},0.7f);
-                g.setColour(juce::Colour(0xffffcafc).withAlpha(0.55f)); g.fillEllipse(points[i].x-1.7f,points[i].y-1.7f,3.4f,3.4f);
+                g.setColour(coreColour.brighter(1.2f).withAlpha(activity)); g.fillEllipse(points[i].x-1.7f,points[i].y-1.7f,3.4f,3.4f);
             }
             g.setGradientFill(juce::ColourGradient(juce::Colour(0xff17132a),centre.x,centre.y,
                                                    juce::Colour(0xee090d17),centre.x+radius*0.3f,centre.y,true));
-            g.fillEllipse(disc.withSizeKeepingCentre(radius*0.72f,radius*0.72f));
+            g.fillEllipse(disc.withSizeKeepingCentre(radius*0.36f,radius*0.36f));
+            g.setColour(coreColour.withAlpha(0.45f));
+            g.drawEllipse(disc.withSizeKeepingCentre(radius*0.36f,radius*0.36f),1.0f);
         }
         if(!main)
         {
@@ -87,7 +110,7 @@ public:
         }
         if(main)
         {
-            g.setColour(juce::Colour(0xfffceaff)); g.setFont(radius*0.27f);
+            g.setColour(juce::Colour(0xfffceaff)); g.setFont(radius*0.14f);
             g.drawText(juce::String(int(std::round(slider.getValue())))+"%",bounds,juce::Justification::centred);
         }
         if(slider.isMouseOverOrDragging() || slider.hasKeyboardFocus(true))

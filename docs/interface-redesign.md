@@ -5,14 +5,16 @@ Checkpoint anterior: `a8f1bb7` (VocalPure 0.3.0, antes do redesign).
 Mudancas somente visuais em PluginEditor, Theme e SpectrumDisplay:
 - Fundo ciano/turquesa com gradiente azul e textura de rede vetorial original.
 - Barra superior escura com Undo, presets, Compare, informacoes e bypass.
-- Grande controle circular com acabamento preto, halo magenta, malha geometrica estatica,
+- Grande controle circular com acabamento preto, interior de cinza a rosa e espectro radial ao vivo,
   percentual central e marcador que acompanha o parametro real de reducao.
 - Painel esquerdo compacto, identificacao RNNoise e indicador Mono/Dual (nao e um seletor ficticio).
 - Espectro circular com curvas reais, preenchimento magenta/ciano, escala logaritmica e modos existentes.
 - Medidores/ganhos em faixa inferior compacta; largura estereo, VAD e status preservados.
 
 Marca e desenho originais VocalPure; nenhuma arte, logo ou modelo comercial da referencia incorporado.
-A malha central e decoracao estatica, nao uma visualizacao do estado de uma rede neural.
+A malha central representa 32 bandas logaritmicas do FFT real de entrada, suavizadas no thread
+da interface. Nao representa o estado interno da rede neural. Silencio e ausencia de novos
+quadros apagam a atividade; nao ha movimento aleatorio nem FFT adicional no callback de audio.
 Reducao e ajustada por arraste, roda ou teclado, com percentual no centro; o campo numerico separado
 foi removido para aproximar a composicao da referencia. Width e ganhos mantem campos numericos.
 
@@ -25,3 +27,9 @@ Refino do indicador: aba triangular magenta desenhada sob o aro, com sombra, gra
 e entalhe radial escuro. Substitui a pequena seta, o ponto e o arco de progresso do
 controle principal. A aba acompanha o valor real e tem espaco reservado em toda a rotacao.
 Base anterior a este refino: `2a72bed`.
+
+Segundo refino: aro ciano/rosa e seta com cor amostrada do mesmo gradiente na posicao
+angular atual. Interior cinza em 0%, rosa em 100%, com brilho e geometria ligados ao
+espectro de entrada. Circulo da porcentagem reduzido a metade do diametro anterior.
+Titulos alinhados ao centro de cada controle; Reset representado por seta circular,
+com nome acessivel e tooltip preservados. Base anterior: `963acad`.
