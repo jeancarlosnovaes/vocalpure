@@ -14,7 +14,7 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
         addAndMakeVisible(slider);
     }
     input.setName("Input gain"); output.setName("Output gain"); reduction.setName("Noise reduction"); width.setName("Stereo width");
-    reduction.setTextBoxStyle(juce::Slider::TextBoxBelow,false,90,22); reduction.setTextValueSuffix(" %"); reduction.setDoubleClickReturnValue(true,65);
+    reduction.setTextBoxStyle(juce::Slider::NoTextBox,false,0,0); reduction.setTextValueSuffix(" %"); reduction.setDoubleClickReturnValue(true,65);
     reduction.setTooltip("Real RNNoise processing. 0%: aligned dry signal. 100%: neural output. Intermediate values blend both.");
     width.setTextValueSuffix(" %"); width.setDoubleClickReturnValue(true,100);
     width.setTooltip("Mid/side width. 0% mono, 100% original width, 200% double side. No effect on mono input.");
@@ -36,7 +36,7 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
         juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::InfoIcon,"VocalPure 0.3.0",
             "Local RNNoise 0.1.1 processing.\n\nSupported rates: 44.1, 48 and 96 kHz. Latency: 20 ms at 48 kHz; 26.67 ms otherwise.\n\n"
             "Compare and Bypass play the time-aligned original without changing your settings. Width uses mid/side; mono is unaffected.\n\n"
-            "Spectrum: purple input / cyan output, stereo power average. LEVEL CHANGE measures overall signal level, not isolated noise. VAD may give false positives.\n\n"
+            "Spectrum: magenta input / pale cyan output, stereo power average. LEVEL CHANGE measures overall signal level, not isolated noise. VAD may give false positives.\n\n"
             "Seven presets change real intensity values. Additional neural profiles and Low CPU are not available yet.","OK",this);
     };
     bypass.setTooltip("Pass the latency-aligned original; smooth transition. Neural state remains active.");
@@ -44,6 +44,7 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
     for(juce::Component* c:std::initializer_list<juce::Component*>{&presets,&views,&bypass,&compare,&reset,&undo,&settings,
                           &status,&voice,&delta,&spectrum,&inputMeter,&outputMeter}) addAndMakeVisible(c);
     for(auto* label:{&status,&voice,&delta}) { label->setColour(juce::Label::textColourId,juce::Colour(0xffa8becc)); label->setFont(juce::Font(juce::FontOptions(13))); }
+    voice.setColour(juce::Label::textColourId,juce::Colour(0xffe6ffff));
     status.setJustificationType(juce::Justification::centredLeft); voice.setJustificationType(juce::Justification::centred);
     delta.setJustificationType(juce::Justification::centred);
     setResizable(true,true); setResizeLimits(800,448,1500,840); getConstrainer()->setFixedAspectRatio(1000.0/560);
@@ -56,37 +57,58 @@ void VocalPureEditor::saveUndo()
 { for(size_t i=0;i<ids.size();++i) undoValues[i]=processor.state.getRawParameterValue(ids[i])->load(); undo.setEnabled(true); }
 void VocalPureEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colour(0xff0b121c));
+    g.fillAll(juce::Colour(0xff087c9b));
     g.addTransform(juce::AffineTransform::scale(float(getWidth())/1000,float(getHeight())/560));
-    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff172c38),0,0,juce::Colour(0xff211b32),1000,560,false));
-    g.fillRect(0,0,1000,560);
-    g.setColour(juce::Colour(0xff10202b));
-    for(auto r:{juce::Rectangle<float>(20,100,220,344),{254,100,362,344},{630,100,350,344},{20,460,960,72}}) g.fillRoundedRectangle(r,12);
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff27d4de),480,45,juce::Colour(0xff056487),220,560,false));
+    g.fillRect(0,42,1000,518);
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0x004cbdd8),420,100,juce::Colour(0x995247bd),1000,550,false));
+    g.fillRect(0,42,1000,518);
+    // Original static network texture, independent of audio and model state.
+    const std::array<juce::Point<float>,16> nodes {{{20,160},{140,130},{230,205},{340,105},{440,170},{600,95},{730,170},{930,110},
+        {75,350},{190,440},{350,360},{490,460},{650,390},{800,460},{950,330},{990,220}}};
+    for(size_t i=0;i<nodes.size();++i)
+    {
+        g.setColour(juce::Colour(0xffb0f4f5).withAlpha(0.10f));
+        g.drawLine({nodes[i],nodes[(i+3)%nodes.size()]},1); g.drawLine({nodes[i],nodes[(i+6)%nodes.size()]},0.6f);
+        g.setColour(juce::Colour(0xffd9f9ff).withAlpha(0.17f)); g.fillEllipse(nodes[i].x-2.5f,nodes[i].y-2.5f,5,5);
+    }
+    juce::Path shadow; shadow.startNewSubPath(445,380); shadow.lineTo(618,230); shadow.lineTo(905,490); shadow.lineTo(560,490); shadow.closeSubPath();
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0x77521588),500,350,juce::Colour(0x00481983),870,540,false)); g.fillPath(shadow);
+    g.setColour(juce::Colour(0xff10151c)); g.fillRect(0,0,1000,42);
+    g.setColour(juce::Colour(0xff7bdfe4)); g.fillRect(0,42,1000,2);
     auto text=[&](juce::String t,int x,int y,int w,int h,float font,juce::Colour colour)
     { g.setColour(colour); g.setFont(font); g.drawText(t,x,y,w,h,juce::Justification::centredLeft); };
-    const juce::Colour white(0xffe0eff0),muted(0xff8ca6b7),cyan(0xff56ddc9);
-    text("VOCALPURE",28,23,235,36,28,white); text("0.3.0   /   LOCAL NEURAL AUDIO",30,61,340,18,11,muted);
-    text("NEURAL ENGINE",38,118,180,22,12,muted); text("RNNoise",38,149,180,32,23,white);
-    text("Speech model / dual channel",38,185,185,22,12,muted); text("STEREO WIDTH",38,224,180,20,12,muted);
-    text("NOISE REDUCTION",330,121,230,24,15,white);
-    text("LIVE SPECTRUM",648,118,170,22,12,white);
-    text("INPUT",53,470,80,18,11,muted); text("GAIN",265,470,65,18,11,muted);
-    text("OUTPUT",393,470,90,18,11,muted); text("GAIN",605,470,65,18,11,muted);
-    g.setColour(juce::Colour(0xffb586df)); g.fillEllipse(654,417,6,6); text("Original",666,409,80,22,11,muted);
-    g.setColour(cyan); g.fillEllipse(750,417,6,6); text("Processed",762,409,100,22,11,muted);
+    const juce::Colour dark(0xff073c50),white(0xffecffff);
+    text("V O C A L P U R E",42,65,400,40,28,dark);
+    text("LOCAL NEURAL AUDIO",734,72,240,30,17,dark);
+    text("0.3.0",44,107,120,18,11,dark);
+    text("NEURAL ENGINE",45,219,230,26,17,white);
+    g.setColour(juce::Colour(0xff8be1e6)); g.fillRoundedRectangle(40,252,235,57,28);
+    g.setColour(juce::Colour(0xff101b22)); g.fillRoundedRectangle(44,256,227,49,24);
+    text("RNNoise",65,263,190,34,25,white);
+    text("ANALYSIS",46,332,150,22,15,white); text("WIDTH",210,332,90,22,15,white);
+    g.setColour(juce::Colour(0xff8be1e6)); g.fillRoundedRectangle(40,366,144,52,25);
+    g.setColour(juce::Colour(0xff10232d)); g.fillRoundedRectangle(44,370,136,44,22);
+    text(processor.getTotalNumInputChannels()==1?"MONO":"DUAL",76,380,100,24,20,white);
+    text("NOISE REDUCTION",442,110,225,24,15,white);
+    text("LIVE SPECTRUM",781,180,190,22,14,white);
+    g.setColour(juce::Colour(0xff101e2c).withAlpha(0.95f)); g.fillRoundedRectangle(20,489,960,51,12);
+    g.setColour(juce::Colour(0xffeb69e2)); g.fillEllipse(788,449,5,5); text("IN",800,442,30,18,10,white);
+    g.setColour(juce::Colour(0xffa4fff5)); g.fillEllipse(851,449,5,5); text("OUT",864,442,40,18,10,white);
 }
 void VocalPureEditor::resized()
 {
     const float sx=float(getWidth())/1000,sy=float(getHeight())/560;
     auto place=[&](juce::Component& c,int x,int y,int w,int h){c.setBounds(juce::Rectangle<float>(float(x)*sx,float(y)*sy,float(w)*sx,float(h)*sy).toNearestInt());};
-    place(presets,465,29,230,32); place(settings,710,29,65,32); place(bypass,800,29,150,32);
-    place(width,72,246,116,126); place(reset,38,392,84,30); place(undo,137,392,84,30);
-    place(reduction,292,158,286,250); place(voice,282,411,306,22);
-    place(views,820,114,140,29); place(spectrum,642,152,324,246);
-    place(inputMeter,43,486,200,40); place(outputMeter,383,486,200,40);
-    place(input,261,480,85,48); place(output,601,480,85,48);
+    place(undo,16,7,82,28); place(presets,112,7,330,28); place(compare,469,7,225,28);
+    place(settings,732,7,74,28); place(bypass,845,7,140,28);
+    place(reset,108,155,88,42); place(width,196,354,94,105);
+    place(reduction,324,126,400,340); place(voice,365,466,315,20);
+    place(spectrum,747,211,226,226); place(views,780,459,165,26);
+    place(inputMeter,37,497,187,37); place(input,243,491,85,43);
+    place(outputMeter,365,497,187,37); place(output,571,491,85,43);
     input.setSliderStyle(juce::Slider::LinearHorizontal); output.setSliderStyle(juce::Slider::LinearHorizontal);
-    place(compare,750,488,210,30); place(delta,708,465,255,22); place(status,28,536,935,20);
+    place(delta,693,503,265,25); place(status,28,540,935,20);
 }
 void VocalPureEditor::timerCallback()
 {
