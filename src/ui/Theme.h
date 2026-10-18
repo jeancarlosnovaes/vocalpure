@@ -90,11 +90,12 @@ public:
                 g.drawLine({points[i],points[(i+4)%points.size()]},0.7f);
                 g.setColour(coreColour.brighter(1.2f).withAlpha(activity)); g.fillEllipse(points[i].x-1.7f,points[i].y-1.7f,3.4f,3.4f);
             }
-            g.setGradientFill(juce::ColourGradient(juce::Colour(0xff17132a),centre.x,centre.y,
-                                                   juce::Colour(0xee090d17),centre.x+radius*0.3f,centre.y,true));
-            g.fillEllipse(disc.withSizeKeepingCentre(radius*0.36f,radius*0.36f));
-            g.setColour(coreColour.withAlpha(0.45f));
-            g.drawEllipse(disc.withSizeKeepingCentre(radius*0.36f,radius*0.36f),1.0f);
+            const auto hub=disc.withSizeKeepingCentre(radius*0.28f,radius*0.28f);
+            g.setGradientFill(juce::ColourGradient(juce::Colour(0xff292a2e),centre.x,centre.y,
+                                                   juce::Colour(0xff090c11),centre.x+hub.getWidth()*0.5f,centre.y,true));
+            g.fillEllipse(hub);
+            g.setColour(coreColour.withAlpha(0.3f));
+            g.drawEllipse(hub,1.0f);
         }
         if(!main)
         {
@@ -108,12 +109,5 @@ public:
         const float dotX=centre.x+std::sin(angle)*radius,dotY=centre.y-std::cos(angle)*radius;
         g.setColour(juce::Colour(0xffc6fff3).withAlpha(alpha)); g.fillEllipse(dotX-5,dotY-5,10,10);
         }
-        if(main)
-        {
-            g.setColour(juce::Colour(0xfffceaff)); g.setFont(radius*0.14f);
-            g.drawText(juce::String(int(std::round(slider.getValue())))+"%",bounds,juce::Justification::centred);
-        }
-        if(slider.isMouseOverOrDragging() || slider.hasKeyboardFocus(true))
-        { g.setColour(juce::Colour(0xff6aebda).withAlpha(0.35f)); g.drawEllipse(disc.reduced(8),1.2f); }
     }
 };
