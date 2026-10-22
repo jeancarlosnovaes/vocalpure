@@ -38,5 +38,6 @@ private:
     std::atomic<float>* reduction;
     std::atomic<float>* width;
     std::atomic<float>* compare;
+    std::atomic<float>* profile;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VocalPureProcessor)
 };

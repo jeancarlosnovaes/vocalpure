@@ -1,7 +1,7 @@
 # Arquitetura e plano
 
-**Estado atual: Fase 2 implementada.** RNNoise foi integrado; veja `phase2.md` para pipeline,
-latencia medida, contratos e limites atuais. O restante deste documento registra o plano original.
+**Estado atual: Fase 4 implementada no motor.** Veja `phase4.md` para perfis, benchmark,
+regressao e limites. O restante deste documento registra o plano original.
 
 ## Decisoes
 C++20, JUCE 8.0.6 (commit 51a8a6d7aeae7326956d747737ccf1575e61e209) e CMake >=3.22.

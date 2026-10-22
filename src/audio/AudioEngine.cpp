@@ -28,7 +28,7 @@ void AudioEngine::prepare(double rate,int channels,AudioParameters p)
     }
     ready=loaded; if(!ready) status.store(2);
 }
-void AudioEngine::runFrame() noexcept
+void AudioEngine::runFrame(int profile) noexcept
 {
     float vad=0;
     for(int c=0;c<channelCount;++c)
@@ -36,6 +36,7 @@ void AudioEngine::runFrame() noexcept
         auto& s=channel[size_t(c)];
         if(resample) s.down.process(s.inputFrame.data(),s.neuralIn.data());
         else std::copy_n(s.inputFrame.data(),480,s.neuralIn.data());
+        s.model.setProfile(profile);
         auto result=s.model.processFrame(s.neuralIn,s.neuralOut);
         if(!result.ok) { ready=false; status.store(2); voiceProbability.store(0); return; }
         vad=juce::jmax(vad,result.voiceProbability);
@@ -53,6 +54,7 @@ void AudioEngine::process(juce::AudioBuffer<float>& buffer,AudioParameters p) no
     reduction.setTargetValue(ready ? p.reduction/100.0f : 0.0f);
     float peakIn=0,peakOut=0; double dryEnergy=0,wetEnergy=0;
     const int channels=juce::jmin(channelCount,buffer.getNumChannels());
+    std::array<float*,2> data {buffer.getWritePointer(0),channels==2?buffer.getWritePointer(1):nullptr};
     const bool capture=spectrum.enabled.load(std::memory_order_relaxed);
     if(!capture) spectrum.discardPartial();
     for(int i=0;i<buffer.getNumSamples();++i)
@@ -63,18 +65,18 @@ void AudioEngine::process(juce::AudioBuffer<float>& buffer,AudioParameters p) no
         float aligned[2] {};
         for(int c=0;c<channels;++c)
         {
-            auto& s=channel[size_t(c)]; auto* data=buffer.getWritePointer(c);
-            float raw=data[i]; if(!std::isfinite(raw)) { raw=0; status.store(3); }
+            auto& s=channel[size_t(c)]; auto* samples=data[size_t(c)];
+            float raw=samples[i]; if(!std::isfinite(raw)) { raw=0; status.store(3); }
             peakIn=juce::jmax(peakIn,std::abs(raw));
-            if(delay==0) { data[i]=raw; aligned[c]=raw; continue; }
+            if(delay==0) { samples[i]=raw; aligned[c]=raw; continue; }
             const float original=s.rawDelay[size_t(delayPosition)],dry=s.gainedDelay[size_t(delayPosition)];
             aligned[c]=original;
             s.rawDelay[size_t(delayPosition)]=raw; s.gainedDelay[size_t(delayPosition)]=raw*ig;
             s.inputFrame[size_t(framePosition)]=raw*ig;
             const float wet=ready ? s.outputFrame[size_t(framePosition)] : dry;
             const float mixed=(dry+amount*(wet-dry))*og;
-            data[i]=original+on*(mixed-original);
-            if(!std::isfinite(data[i])) data[i]=original;
+            samples[i]=original+on*(mixed-original);
+            if(!std::isfinite(samples[i])) samples[i]=original;
         }
         if(channels==2 && stereoWidth!=1.0f && delay>0)
         {
@@ -90,7 +92,7 @@ void AudioEngine::process(juce::AudioBuffer<float>& buffer,AudioParameters p) no
         {
             if(++delayPosition==delay) delayPosition=0;
             // Previous result is read before the next frame is accepted.
-            if(++framePosition==frameSize) { framePosition=0; if(ready) runFrame(); }
+            if(++framePosition==frameSize) { framePosition=0; if(ready) runFrame(p.profile); }
         }
     }
     for(int c=channels;c<buffer.getNumChannels();++c) buffer.clear(c,0,buffer.getNumSamples());

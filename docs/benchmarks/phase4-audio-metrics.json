@@ -1,0 +1,41 @@
+{
+  "General": {
+    "rate": 44100,
+    "channels": 1,
+    "samples": 1323000,
+    "duration_seconds": 30.0,
+    "output_peak_dbfs": -4.513021308052329,
+    "clipped_samples": 0,
+    "overall_level_change_db": 0.656129939738269,
+    "low_energy_windows_attenuation_db": 14.00350564828779,
+    "high_energy_windows_attenuation_db": 0.39297352534955077,
+    "waveform_correlation": 0.9471534964225614,
+    "note": "Energy windows are not labelled speech/noise. No clean reference: SI-SDR/STOI improvement not claimed."
+  },
+  "Strong": {
+    "rate": 44100,
+    "channels": 1,
+    "samples": 1323000,
+    "duration_seconds": 30.0,
+    "output_peak_dbfs": -4.703588041282298,
+    "clipped_samples": 0,
+    "overall_level_change_db": 0.8193143306632316,
+    "low_energy_windows_attenuation_db": 15.381609282580479,
+    "high_energy_windows_attenuation_db": 0.5283887180703626,
+    "waveform_correlation": 0.9426766953282141,
+    "note": "Energy windows are not labelled speech/noise. No clean reference: SI-SDR/STOI improvement not claimed."
+  },
+  "Eco": {
+    "rate": 44100,
+    "channels": 1,
+    "samples": 1323000,
+    "duration_seconds": 30.0,
+    "output_peak_dbfs": -5.194166571659544,
+    "clipped_samples": 0,
+    "overall_level_change_db": 0.8298673037562434,
+    "low_energy_windows_attenuation_db": 13.00451865775614,
+    "high_energy_windows_attenuation_db": 0.5112379612509064,
+    "waveform_correlation": 0.9412814266684802,
+    "note": "Energy windows are not labelled speech/noise. No clean reference: SI-SDR/STOI improvement not claimed."
+  }
+}

@@ -1,5 +1,10 @@
 # Validacao
 
+**Fase 4:** ver `phase4.md` e `benchmarks/phase4-results.md`. Perfis RNNoise reais,
+reamostrador comparado com referencia anterior, metade das inferencias Eco,
+estereo/anti-fase/canal silencioso por taxa, blocos variaveis, migracao e 30 s simulados
+com trocas. Audios reais exportados para comparacao; superioridade perceptual nao declarada.
+
 **Fase 3:** suite expandida com calibracao FFT, fila visual saturada, invariancia do audio com captura,
 width/mono sum, Compare, presets e schema 3. Conferencia visual e detalhes em `phase3.md`.
 

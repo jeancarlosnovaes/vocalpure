@@ -17,7 +17,7 @@ private:
     VocalPureProcessor& processor;
     VocalTheme theme;
     juce::Slider input,output,reduction,width;
-    juce::ComboBox presets,views;
+    juce::ComboBox presets,views,profiles;
     juce::ToggleButton bypass {"BYPASS"},compare {"COMPARE ORIGINAL"};
     juce::TextButton reset {"RESET"},undo {"UNDO"},settings {"INFO"};
     juce::Label status,voice,delta;
@@ -25,9 +25,10 @@ private:
     LevelMeter inputMeter {"INPUT"},outputMeter {"OUTPUT"};
     juce::AudioProcessorValueTreeState::SliderAttachment inputAttachment,outputAttachment,reductionAttachment,widthAttachment;
     juce::AudioProcessorValueTreeState::ButtonAttachment bypassAttachment,compareAttachment;
+    juce::AudioProcessorValueTreeState::ComboBoxAttachment profileAttachment;
     juce::TooltipWindow tooltips {this};
-    static constexpr std::array<const char*,6> ids {"inputGain","outputGain","bypass","reduction","width","compare"};
-    std::array<float,6> undoValues {};
+    static constexpr std::array<const char*,7> ids {"inputGain","outputGain","bypass","reduction","width","compare","profile"};
+    std::array<float,7> undoValues {};
     int selectedPreset=-1,emptyTicks=0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VocalPureEditor)
 };

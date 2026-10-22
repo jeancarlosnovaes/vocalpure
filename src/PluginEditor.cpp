@@ -2,9 +2,15 @@
 VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
  : AudioProcessorEditor(p),processor(p),inputAttachment(p.state,"inputGain",input),
    outputAttachment(p.state,"outputGain",output),reductionAttachment(p.state,"reduction",reduction),
-   widthAttachment(p.state,"width",width),bypassAttachment(p.state,"bypass",bypass),compareAttachment(p.state,"compare",compare)
+   widthAttachment(p.state,"width",width),bypassAttachment(p.state,"bypass",bypass),compareAttachment(p.state,"compare",compare),
+   profileAttachment(p.state,"profile",profiles)
 {
     setLookAndFeel(&theme);
+    profiles.setName("RNNoise profile");
+    profiles.addItem("General",1); profiles.addItem("Strong",2); profiles.addItem("Eco",3);
+    profiles.setSelectedId(int(p.state.getRawParameterValue("profile")->load())+1,juce::dontSendNotification);
+    profiles.setJustificationType(juce::Justification::centred);
+    profiles.setTooltip("Same RNNoise model. General: normal mask. Strong: deeper mask, may affect voice. Eco: neural mask refreshed every 20 ms, FFT and audio every 10 ms; may react slower.");
     for(auto* slider:{&input,&output,&reduction,&width})
     {
         slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -34,15 +40,15 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
     };
     settings.onClick=[this]
     {
-        juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::InfoIcon,"VocalPure 0.3.0",
+        juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::InfoIcon,"VocalPure 0.4.0",
             "Local RNNoise 0.1.1 processing.\n\nSupported rates: 44.1, 48 and 96 kHz. Latency: 20 ms at 48 kHz; 26.67 ms otherwise.\n\n"
             "Compare and Bypass play the time-aligned original without changing your settings. Width uses mid/side; mono is unaffected.\n\n"
             "Spectrum: magenta input / pale cyan output, stereo power average. LEVEL CHANGE measures overall signal level, not isolated noise. VAD may give false positives.\n\n"
-            "Seven presets change real intensity values. Additional neural profiles and Low CPU are not available yet.","OK",this);
+            "Eight presets. General, Strong and Eco are configurations of the same RNNoise model. Strong deepens the mask; Eco updates the neural mask every 20 ms and may affect speech onsets. Single Analysis and ONNX are not available yet.","OK",this);
     };
     bypass.setTooltip("Pass the latency-aligned original; smooth transition. Neural state remains active.");
     compare.setTooltip("Listen to the aligned original, then switch back without losing reduction, width or gain settings.");
-    for(juce::Component* c:std::initializer_list<juce::Component*>{&presets,&views,&bypass,&compare,&reset,&undo,&settings,
+    for(juce::Component* c:std::initializer_list<juce::Component*>{&presets,&views,&profiles,&bypass,&compare,&reset,&undo,&settings,
                           &status,&voice,&delta,&spectrum,&inputMeter,&outputMeter}) addAndMakeVisible(c);
     for(auto* label:{&status,&voice,&delta}) { label->setColour(juce::Label::textColourId,juce::Colour(0xffa8becc)); label->setFont(juce::Font(juce::FontOptions(13))); }
     voice.setColour(juce::Label::textColourId,juce::Colour(0xffe6ffff));
@@ -83,11 +89,8 @@ void VocalPureEditor::paint(juce::Graphics& g)
     const juce::Colour dark(0xff073c50),white(0xffecffff);
     text("V O C A L P U R E",42,65,400,40,28,dark);
     text("LOCAL NEURAL AUDIO",734,72,240,30,17,dark);
-    text("0.3.0",44,107,120,18,11,dark);
-    text("NEURAL ENGINE",40,219,235,26,17,white,juce::Justification::centred);
-    g.setColour(juce::Colour(0xff8be1e6)); g.fillRoundedRectangle(40,252,235,57,28);
-    g.setColour(juce::Colour(0xff101b22)); g.fillRoundedRectangle(44,256,227,49,24);
-    text("RNNoise",44,263,227,34,25,white,juce::Justification::centred);
+    text("0.4.0",44,107,120,18,11,dark);
+    text("RNNOISE PROFILE",40,219,235,26,17,white,juce::Justification::centred);
     text("ANALYSIS",40,332,144,22,15,white,juce::Justification::centred);
     text("WIDTH",196,332,94,22,15,white,juce::Justification::centred);
     g.setColour(juce::Colour(0xff8be1e6)); g.fillRoundedRectangle(40,366,144,52,25);
@@ -106,6 +109,7 @@ void VocalPureEditor::resized()
     place(undo,16,7,82,28); place(presets,112,7,330,28); place(compare,469,7,225,28);
     place(settings,732,7,74,28); place(bypass,845,7,140,28);
     place(reset,131,155,52,46); place(width,196,354,94,105);
+    place(profiles,40,252,235,57);
     place(reduction,324,126,400,340); place(voice,365,466,315,20);
     place(spectrum,747,211,226,226); place(views,780,459,165,26);
     place(inputMeter,37,497,187,37); place(input,243,491,85,43);
@@ -137,6 +141,7 @@ void VocalPureEditor::timerCallback()
     {
         const auto preset=factoryPresets[size_t(selectedPreset)];
         if(std::abs(reduction.getValue()-preset.reduction)>0.1 || std::abs(width.getValue()-preset.width)>0.1
+           || profiles.getSelectedId()!=preset.profile+1
            || std::abs(input.getValue())>0.01 || std::abs(output.getValue())>0.01)
         { selectedPreset=-1; presets.setSelectedId(0,juce::dontSendNotification); }
     }

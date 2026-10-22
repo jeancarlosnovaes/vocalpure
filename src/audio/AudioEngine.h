@@ -6,7 +6,7 @@
 #include <atomic>
 #include <array>
 #include <vector>
-struct AudioParameters { float inputDb,outputDb; bool bypass; float reduction=65.0f,width=100.0f; bool compare=false; };
+struct AudioParameters { float inputDb,outputDb; bool bypass; float reduction=65.0f,width=100.0f; bool compare=false; int profile=0; };
 class AudioEngine
 {
 public:
@@ -27,7 +27,7 @@ private:
         std::array<float,480> neuralIn {},neuralOut {};
         std::vector<float> rawDelay,gainedDelay;
     };
-    void runFrame() noexcept;
+    void runFrame(int profile) noexcept;
     static_assert(std::atomic<float>::is_always_lock_free);
     static_assert(std::atomic<int>::is_always_lock_free);
     std::array<Channel,2> channel;

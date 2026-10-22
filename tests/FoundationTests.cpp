@@ -10,6 +10,7 @@
 #include <chrono>
 #include <limits>
 #include <cstdlib>
+#include "PerformanceBench.h"
 
 thread_local bool trackAllocations=false;
 thread_local size_t allocations=0;
@@ -219,14 +220,16 @@ void phase3Tests()
     std::cout<<"PASS: phase3 FIFO saturation/order, calibrated stereo FFT, spectrum audio invariance, width/mono sum, compare, seven presets, persistence.\n";
 }
 
-void render(const juce::File& source,const juce::File& destination,float amount)
+#include "Phase4Tests.h"
+
+void render(const juce::File& source,const juce::File& destination,float amount,int profile=0)
 {
     require(!destination.existsAsFile(),"Output already exists; choose a new path");
     juce::AudioFormatManager formats; formats.registerBasicFormats();
     std::unique_ptr<juce::AudioFormatReader> reader(formats.createReaderFor(source));
     require(reader!=nullptr,"Cannot read input audio");
     require(reader->numChannels==1 || reader->numChannels==2,"Only mono/stereo supported");
-    VocalPureProcessor p; prepare(p,int(reader->sampleRate),int(reader->numChannels),amount);
+    VocalPureProcessor p; set(p,"profile",float(profile)); prepare(p,int(reader->sampleRate),int(reader->numChannels),amount);
     require(p.engine.status.load()==0,"Unsupported input sample rate");
     destination.getParentDirectory().createDirectory();
     auto stream=destination.createOutputStream(); require(stream!=nullptr,"Cannot create output");
@@ -258,9 +261,10 @@ int main(int argc,char** argv)
     juce::ScopedJuceInitialiser_GUI init;
     try
     {
-        if(argc==5 && std::string(argv[1])=="--render")
-            render(juce::File(juce::String::fromUTF8(argv[2])),juce::File(juce::String::fromUTF8(argv[3])),std::stof(argv[4]));
-        else { tests(); phase3Tests(); }
+        if(argc==3 && std::string(argv[1])=="--benchmark") benchmark(argv[2],3);
+        else if((argc==5 || argc==6) && std::string(argv[1])=="--render")
+            render(juce::File(juce::String::fromUTF8(argv[2])),juce::File(juce::String::fromUTF8(argv[3])),std::stof(argv[4]),argc==6?std::stoi(argv[5]):0);
+        else { tests(); phase3Tests(); phase4Tests(); }
         return 0;
     }
     catch(const std::exception& e) { trackAllocations=false; std::cerr<<"FAIL: "<<e.what()<<'\n'; return 1; }

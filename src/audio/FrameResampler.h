@@ -12,7 +12,7 @@ public:
     void prepare(int from,int to)
     {
         inCount=from/100; outCount=to/100;
-        history.fill(0); starts.resize(size_t(outCount)); weights.resize(size_t(outCount)*taps);
+        samples.fill(0); starts.resize(size_t(outCount)); weights.resize(size_t(outCount)*taps);
         const double cutoff=0.49*std::min(1.0,double(to)/from);
         for(int j=0;j<outCount;++j)
         {
@@ -32,22 +32,22 @@ public:
     }
     void process(const float* in,float* out) noexcept
     {
+        // A contiguous history + current frame removes a branch from every FIR tap.
+        std::copy_n(in,inCount,samples.data()+inCount);
         for(int j=0;j<outCount;++j)
         {
             float sum=0; const auto* kernel=weights.data()+size_t(j)*taps;
+            const auto* source=samples.data()+inCount+starts[size_t(j)];
             for(int k=0;k<taps;++k)
-            {
-                const int index=starts[size_t(j)]+k;
-                sum+=kernel[k]*(index<0 ? history[size_t(inCount+index)] : in[index]);
-            }
+                sum+=kernel[k]*source[k];
             out[j]=sum;
         }
-        std::copy_n(in,inCount,history.data());
+        std::copy_n(samples.data()+inCount,inCount,samples.data());
     }
 private:
     static constexpr int taps=128;
     int inCount=480,outCount=480;
-    std::array<float,960> history {};
+    std::array<float,1920> samples {};
     std::vector<int> starts;
     std::vector<float> weights;
 };

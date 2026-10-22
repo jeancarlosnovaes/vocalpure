@@ -3,8 +3,11 @@
 #include <cmath>
 #include <mutex>
 #include <stdexcept>
+extern "C" float vocalpure_rnnoise_process_frame(DenoiseState*,float*,const float*,int,float);
+extern "C" unsigned long vocalpure_rnnoise_inferences(const DenoiseState*);
 bool RNNoiseEngine::prepare()
 {
+    strong=0;
     // Serialise the lazy global FFT/window initialisation outside audio.
     static std::once_flag initialised;
     try
@@ -28,7 +31,9 @@ DenoiserResult RNNoiseEngine::processFrame(std::span<const float> in,std::span<f
         if(!std::isfinite(in[i])) return {false,0};
         scaled[i]=std::clamp(in[i],-1.0f,1.0f)*32768.0f;
     }
-    const float vad=rnnoise_process_frame(state.get(),cleaned.data(),scaled.data());
+    const float target=targetProfile==1?1.0f:0.0f;
+    strong+=std::clamp(target-strong,-0.5f,0.5f);
+    const float vad=vocalpure_rnnoise_process_frame(state.get(),cleaned.data(),scaled.data(),targetProfile==2,strong);
     if(!std::isfinite(vad)) return {false,0};
     for(size_t i=0;i<480;++i)
     {
@@ -37,3 +42,5 @@ DenoiserResult RNNoiseEngine::processFrame(std::span<const float> in,std::span<f
     }
     return {true,std::clamp(vad,0.0f,1.0f)};
 }
+unsigned long RNNoiseEngine::inferenceCount() const noexcept
+{ return state ? vocalpure_rnnoise_inferences(state.get()) : 0; }

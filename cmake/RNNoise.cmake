@@ -8,6 +8,26 @@ string(REPLACE "  return 0;\n}\n\nDenoiseState *rnnoise_create"
   "  if (!st->rnn.vad_gru_state || !st->rnn.noise_gru_state || !st->rnn.denoise_gru_state) return -1;\n  return 0;\n}\n\nDenoiseState *rnnoise_create" rn_source "${rn_source}")
 string(REPLACE "  rnnoise_init(st, model);"
   "  if (!st) return NULL;\n  if (rnnoise_init(st, model) != 0) { rnnoise_destroy(st); return NULL; }" rn_source "${rn_source}")
+# Local extensions to the pinned backend: real gain shaping and reduced neural
+# cadence. Original API remains the General path; FFT/pitch/synthesis run every frame.
+function(rn_patch before after)
+  string(FIND "${rn_source}" "${before}" offset)
+  if(offset EQUAL -1)
+    message(FATAL_ERROR "Pinned RNNoise source changed: profile patch anchor missing")
+  endif()
+  string(REPLACE "${before}" "${after}" patched "${rn_source}")
+  set(rn_source "${patched}" PARENT_SCOPE)
+endfunction()
+rn_patch("  RNNState rnn;" "  RNNState rnn;\n  float vp_g[NB_BANDS], vp_vad;\n  int vp_cache_valid, vp_skip;\n  unsigned long vp_inferences;")
+rn_patch("float rnnoise_process_frame(DenoiseState *st, float *out, const float *in) {"
+  "float vocalpure_rnnoise_process_frame(DenoiseState *st, float *out, const float *in, int eco, float strong) {")
+rn_patch("    compute_rnn(&st->rnn, g, &vad_prob, features);"
+  "    if (!eco || !st->vp_cache_valid || !st->vp_skip) {\n      compute_rnn(&st->rnn, g, &vad_prob, features);\n      RNN_COPY(st->vp_g, g, NB_BANDS); st->vp_vad = vad_prob;\n      st->vp_cache_valid = 1; st->vp_skip = eco ? 1 : 0; st->vp_inferences++;\n    } else {\n      RNN_COPY(g, st->vp_g, NB_BANDS); vad_prob = st->vp_vad; st->vp_skip = 0;\n    }")
+rn_patch("  silence = compute_frame_features(st, X, P, Ex, Ep, Exp, features, x);"
+  "  silence = compute_frame_features(st, X, P, Ex, Ep, Exp, features, x);\n  if (silence) { st->vp_cache_valid = 0; st->vp_skip = 0; }")
+rn_patch("    pitch_filter(X, P, Ex, Ep, Exp, g);"
+  "    pitch_filter(X, P, Ex, Ep, Exp, g);\n    if (strong > 0) for (i=0;i<NB_BANDS;i++) g[i] = powf(MAX16(0, g[i]), 1.f + .5f*strong);")
+string(APPEND rn_source "\nfloat rnnoise_process_frame(DenoiseState *st, float *out, const float *in) { return vocalpure_rnnoise_process_frame(st, out, in, 0, 0); }\nunsigned long vocalpure_rnnoise_inferences(const DenoiseState *st) { return st->vp_inferences; }\n")
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rnnoise-denoise.c" "${rn_source}")
 # MSVC does not support C variable-length arrays. RNNoise's fixed frame/pitch
 # dimensions are <=1728; use bounded stack workspaces, not heap allocations.

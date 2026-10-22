@@ -4,6 +4,20 @@ class VocalTheme final : public juce::LookAndFeel_V4
 {
 public:
     std::array<float,32> spectrumLevels {};
+    void drawComboBox(juce::Graphics& g,int w,int h,bool down,int bx,int by,int bw,int bh,juce::ComboBox& box) override
+    {
+        if(box.getName()!="RNNoise profile")
+        { juce::LookAndFeel_V4::drawComboBox(g,w,h,down,bx,by,bw,bh,box); return; }
+        const auto bounds=juce::Rectangle<float>(0,0,float(w),float(h));
+        g.setColour(juce::Colour(0xff8be1e6)); g.fillRoundedRectangle(bounds,float(h)*0.5f);
+        g.setColour(juce::Colour(down?0xff213545:0xff101b22));
+        g.fillRoundedRectangle(bounds.reduced(4),float(h)*0.45f);
+        juce::Path arrow; const float x=float(w)-22,y=float(h)*0.5f;
+        arrow.startNewSubPath(x-5,y-3); arrow.lineTo(x,y+3); arrow.lineTo(x+5,y-3);
+        g.setColour(juce::Colour(0xffecffff)); g.strokePath(arrow,juce::PathStrokeType(2));
+    }
+    juce::Font getComboBoxFont(juce::ComboBox& box) override
+    { return box.getName()=="RNNoise profile"?juce::Font(juce::FontOptions(float(box.getHeight())*0.40f)):juce::LookAndFeel_V4::getComboBoxFont(box); }
     VocalTheme()
     {
         setColour(juce::Slider::textBoxTextColourId,juce::Colour(0xffdfe9f0));
