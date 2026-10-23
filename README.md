@@ -27,7 +27,9 @@ O script compila e executa testes, sem instalar o plugin no sistema.
 - [Fase 4: perfis, desempenho e limites](docs/phase4.md)
 - [Medicoes locais de CPU](docs/benchmarks/phase4-results.md)
 - [Validacao basica no DaVinci Resolve](docs/validation-resolve.md)
+- [Fase 5A: avaliacao ONNX e comparacao local](docs/phase5.md)
 
 Carregamento, reproducao mono, Compare/Bypass e restauracao de ajustes verificados no Resolve 21.
-Ainda pendentes: exportacao e validacao completa em DAW, Single Analysis, ONNX e distribuicao final.
+DPDFNet ONNX de 48 kHz avaliado separadamente, com WAVs e medicoes locais; ainda nao integrado ao VST3.
+Ainda pendentes: exportacao e validacao completa em DAW, Single Analysis, integracao ONNX e distribuicao final.
 Nao ha controles ficticios de perfis neurais. Documentos phase1 registram a etapa historica anterior.

@@ -10,7 +10,14 @@
   https://github.com/xiph/rnnoise/tree/v0.1.1. Preservar COPYING e avisos do fonte ao distribuir.
   CMake gera copias com checks de alocacao, workspaces fixos para MSVC, cache de mascara
   a cada dois frames no Eco e profundidade ajustada no Strong; pesos nao modificados.
-- ONNX Runtime ainda nao integrado: https://github.com/microsoft/onnxruntime.
+- Avaliacao offline opcional (nao incorporada ao VST3): DPDFNet Python 0.6.0 e pesos
+  dpdfnet2_48khz_hr, Apache-2.0 conforme pacote/model card do autor.
+  https://github.com/ceva-ip/DPDFNet e https://huggingface.co/Ceva-IP/DPDFNet.
+  Revisao/hash/contrato em tools/onnx_model.json; nao ha redistribuicao dos pesos neste repositorio.
+- ONNX Runtime CPU 1.31.0 (MIT) usado apenas pelo avaliador Python; ainda nao integrado
+  ao plugin. https://github.com/microsoft/onnxruntime. Demais dependencias do ambiente
+  de avaliacao listadas em tools/onnx-eval-requirements.txt; licencas/avisos nas respectivas
+  pastas .dist-info do ambiente local. Preservar avisos caso sejam redistribuidas.
 - Nenhum dataset de treinamento ou recurso comercial foi incorporado. Gravacoes do usuario em tests/output
   sao locais, excluidas do versionamento e nao devem acompanhar distribuicoes.
 

@@ -1,5 +1,10 @@
 # Validacao
 
+**Fase 5A (22/10/2026):** referencia DPDFNet ONNX de 48 kHz, SHA256/metadados,
+particionamento, reset, silencio, cauda e arquivos curtos verificados. Dois trechos
+reais comparados ao RNNoise; detalhes e reproducao em `phase5.md`. Backend C++ e
+integracao ONNX no VST3 ainda pendentes; nao ha validacao auditiva de superioridade.
+
 **Resolve (22/10/2026):** carregamento VST3, reproducao mono, visualizadores reais,
 Compare/Bypass e restauracao de perfil/posicao do controle apos reinicio do aplicativo
 verificados. Escopo e limites em `validation-resolve.md`; exportacao e PDC no host pendentes.

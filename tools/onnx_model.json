@@ -1,0 +1,14 @@
+{
+  "name": "dpdfnet2_48khz_hr",
+  "package": "dpdfnet==0.6.0",
+  "repository": "https://huggingface.co/Ceva-IP/DPDFNet",
+  "revision": "dd6818d00f50c836fed43a6243ebe49116de5964",
+  "filename": "dpdfnet2_48khz_hr.onnx",
+  "sha256": "7f0575a5cec0ba4ffd8f8bd657e06d007e4ccdd955d76faab922b9d3291dc14b",
+  "license": "Apache-2.0",
+  "sample_rate": 48000,
+  "window_samples": 960,
+  "hop_samples": 480,
+  "spectral_delay_hops": 4,
+  "status": "offline evaluation only; not integrated into the VST3"
+}

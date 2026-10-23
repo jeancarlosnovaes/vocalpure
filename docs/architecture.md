@@ -1,7 +1,8 @@
 # Arquitetura e plano
 
-**Estado atual: Fase 4 implementada no motor.** Veja `phase4.md` para perfis, benchmark,
-regressao e limites. O restante deste documento registra o plano original.
+**Estado atual: Fase 4 implementada no motor; Fase 5A com referencia ONNX avaliada.**
+Veja `phase4.md` para o motor e `phase5.md` para contrato, resultados e limites do
+modelo candidato. ONNX ainda fora do VST3. O restante registra o plano original.
 
 ## Decisoes
 C++20, JUCE 8.0.6 (commit 51a8a6d7aeae7326956d747737ccf1575e61e209) e CMake >=3.22.
