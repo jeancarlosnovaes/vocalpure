@@ -23,4 +23,6 @@ O processamento e offline/local; rede e usada apenas para obter dependencias de 
 
 macOS: Xcode/SDK e CMake; `bash scripts/build_macos.sh` configura universal Intel/Apple Silicon,
 VST3/AU/Standalone. Essa plataforma ainda nao foi testada. Assinatura/notarizacao nao configuradas.
-Nao ha instalador nesta fase. ONNX Runtime/Python nao sao dependencias da fase 1.
+Nao ha instalador automatico. `./scripts/package_windows.ps1` gera um pacote interno
+Windows x64 com VST3 completo, Standalone, instrucoes e hashes, apos exigir a regressao.
+Detalhes e pendencias em `phase6.md`. ONNX Runtime/Python nao sao dependencias do plugin.

@@ -1,4 +1,5 @@
 /build/
+/dist/
 /external/JUCE/
 /external/rnnoise/
 /tests/output/

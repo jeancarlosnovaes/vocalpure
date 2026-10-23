@@ -221,6 +221,7 @@ void phase3Tests()
 }
 
 #include "Phase4Tests.h"
+#include "Phase6Tests.h"
 
 void render(const juce::File& source,const juce::File& destination,float amount,int profile=0)
 {
@@ -262,9 +263,10 @@ int main(int argc,char** argv)
     try
     {
         if(argc==3 && std::string(argv[1])=="--benchmark") benchmark(argv[2],3);
+        else if(argc==3 && std::string(argv[1])=="--ui-snapshot") snapshotEditors(juce::File(juce::String::fromUTF8(argv[2])));
         else if((argc==5 || argc==6) && std::string(argv[1])=="--render")
             render(juce::File(juce::String::fromUTF8(argv[2])),juce::File(juce::String::fromUTF8(argv[3])),std::stof(argv[4]),argc==6?std::stoi(argv[5]):0);
-        else { tests(); phase3Tests(); phase4Tests(); }
+        else { tests(); phase3Tests(); phase4Tests(); phase6WidthTests(); }
         return 0;
     }
     catch(const std::exception& e) { trackAllocations=false; std::cerr<<"FAIL: "<<e.what()<<'\n'; return 1; }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(VocalPure VERSION 0.4.0 LANGUAGES C CXX)
+project(VocalPure VERSION 0.4.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -17,6 +17,15 @@ juce_add_plugin(VocalPure COMPANY_NAME "VocalPure" BUNDLE_ID "audio.vocalpure.pl
   PLUGIN_MANUFACTURER_CODE Vcpr PLUGIN_CODE Vp01 FORMATS ${formats}
   PRODUCT_NAME "VocalPure" IS_SYNTH FALSE NEEDS_MIDI_INPUT FALSE NEEDS_MIDI_OUTPUT FALSE
   IS_MIDI_EFFECT FALSE EDITOR_WANTS_KEYBOARD_FOCUS FALSE COPY_PLUGIN_AFTER_BUILD FALSE)
+
+if(WIN32)
+  # JUCE 8.0.6 does not depend on Info.txt when generating this resource.
+  # Regenerate it after a version change, including in an existing build tree.
+  get_target_property(vocalpure_generated VocalPure JUCE_GENERATED_SOURCES_DIRECTORY)
+  get_target_property(vocalpure_info VocalPure JUCE_INFO_FILE)
+  add_custom_command(OUTPUT "${vocalpure_generated}/VocalPure_resources.rc"
+    APPEND DEPENDS "${vocalpure_info}")
+endif()
 target_sources(VocalPure PRIVATE src/PluginProcessor.cpp src/PluginEditor.cpp src/audio/AudioEngine.cpp src/ai/RNNoiseEngine.cpp)
 target_include_directories(VocalPure PUBLIC src)
 target_compile_definitions(VocalPure PUBLIC JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_VST3_CAN_REPLACE_VST2=0)
@@ -26,3 +35,12 @@ juce_add_console_app(VocalPureTests PRODUCT_NAME "VocalPure Tests")
 target_sources(VocalPureTests PRIVATE tests/FoundationTests.cpp)
 target_link_libraries(VocalPureTests PRIVATE VocalPure juce::juce_audio_utils juce::juce_dsp)
 add_test(NAME foundation COMMAND VocalPureTests)
+if(WIN32)
+  juce_add_console_app(VocalPureHostTests PRODUCT_NAME "VocalPure VST3 Smoke Tests")
+  target_sources(VocalPureHostTests PRIVATE tests/VST3HostTests.cpp)
+  target_compile_definitions(VocalPureHostTests PRIVATE JUCE_PLUGINHOST_VST3=1 JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
+  target_link_libraries(VocalPureHostTests PRIVATE juce::juce_audio_processors juce::juce_recommended_config_flags)
+  add_dependencies(VocalPureHostTests VocalPure_VST3)
+  add_test(NAME vst3_smoke COMMAND VocalPureHostTests
+    "${CMAKE_CURRENT_BINARY_DIR}/VocalPure_artefacts/$<CONFIG>/VST3/VocalPure.vst3")
+endif()

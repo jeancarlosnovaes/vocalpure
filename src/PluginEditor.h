@@ -20,7 +20,7 @@ private:
     juce::ComboBox presets,views,profiles;
     juce::ToggleButton bypass {"BYPASS"},compare {"COMPARE ORIGINAL"};
     juce::TextButton reset {"RESET"},undo {"UNDO"},settings {"INFO"};
-    juce::Label status,voice,delta;
+    juce::Label status,voice,delta,widthHint;
     SpectrumDisplay spectrum;
     LevelMeter inputMeter {"INPUT"},outputMeter {"OUTPUT"};
     juce::AudioProcessorValueTreeState::SliderAttachment inputAttachment,outputAttachment,reductionAttachment,widthAttachment;

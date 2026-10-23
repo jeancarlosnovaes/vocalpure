@@ -1,8 +1,9 @@
 # Arquitetura e plano
 
-**Estado atual: Fase 4 implementada no motor; Fase 5A com referencia ONNX avaliada.**
+**Estado atual: Fase 4 no motor; Fase 5A avaliada; Fase 6 iniciada na versao RNNoise 0.4.1.**
 Veja `phase4.md` para o motor e `phase5.md` para contrato, resultados e limites do
-modelo candidato. ONNX ainda fora do VST3. O restante registra o plano original.
+modelo candidato. `phase6.md` registra o candidato interno e pendencias de distribuicao.
+ONNX ainda fora do VST3. O restante registra o plano original.
 
 ## Decisoes
 C++20, JUCE 8.0.6 (commit 51a8a6d7aeae7326956d747737ccf1575e61e209) e CMake >=3.22.

@@ -1,5 +1,10 @@
 # Validacao
 
+**Fase 6 / 0.4.1:** regressao de Width ampliada para as tres taxas, mono/estereo,
+Compare/Bypass e disponibilidade no editor. Novo `vst3_smoke` carrega o bundle real
+em host JUCE minimo e confere layouts, parametros, estado, audio e latencia reportada.
+Isso nao comprova PDC/exportacao no Resolve. Detalhes em `phase6.md`.
+
 **Fase 5A (22/10/2026):** referencia DPDFNet ONNX de 48 kHz, SHA256/metadados,
 particionamento, reset, silencio, cauda e arquivos curtos verificados. Dois trechos
 reais comparados ao RNNoise; detalhes e reproducao em `phase5.md`. Backend C++ e

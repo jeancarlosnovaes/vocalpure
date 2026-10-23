@@ -23,7 +23,12 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
     reduction.setTextBoxStyle(juce::Slider::NoTextBox,false,0,0); reduction.setTextValueSuffix(" %"); reduction.setDoubleClickReturnValue(true,65);
     reduction.setTooltip("Drag to adjust reduction: grey 0%, pink 100%. The moving centre shows the real input spectrum. Double-click: 65%.");
     width.setTextValueSuffix(" %"); width.setDoubleClickReturnValue(true,100);
-    width.setTooltip("Mid/side width. 0% mono, 100% original width, 200% double side. No effect on mono input.");
+    width.setTooltip("Stereo width: 0% sums to mono, 100% preserves the original width, 200% doubles the side signal. Identical left/right channels remain centred. Compare and Bypass play the original.");
+    widthHint.setName("Stereo width availability");
+    widthHint.setTooltip("Width needs different left/right signals. Mono input and identical stereo channels cannot be widened by this control. For a single voice, keep 100%.");
+    widthHint.setJustificationType(juce::Justification::centred);
+    widthHint.setColour(juce::Label::textColourId,juce::Colour(0xffecffff));
+    widthHint.setFont(juce::Font(juce::FontOptions(11)));
     for(size_t i=0;i<factoryPresets.size();++i) presets.addItem(factoryPresets[i].name,int(i)+1);
     presets.setTextWhenNothingSelected("CUSTOM / SELECT PRESET"); presets.setName("Factory presets");
     presets.onChange=[this] { if(presets.getSelectedId()>0) { saveUndo(); selectedPreset=presets.getSelectedId()-1; processor.applyPreset(selectedPreset); } };
@@ -40,16 +45,16 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
     };
     settings.onClick=[this]
     {
-        juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::InfoIcon,"VocalPure 0.4.0",
+        juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::InfoIcon,"VocalPure " JucePlugin_VersionString,
             "Local RNNoise 0.1.1 processing.\n\nSupported rates: 44.1, 48 and 96 kHz. Latency: 20 ms at 48 kHz; 26.67 ms otherwise.\n\n"
-            "Compare and Bypass play the time-aligned original without changing your settings. Width uses mid/side; mono is unaffected.\n\n"
+            "Compare and Bypass play the time-aligned original without changing your settings. Width: 0% mono, 100% original, 200% double side. Mono input or identical left/right channels are unaffected. Width is inactive while listening to the original.\n\n"
             "Spectrum: magenta input / pale cyan output, stereo power average. LEVEL CHANGE measures overall signal level, not isolated noise. VAD may give false positives.\n\n"
             "Eight presets. General, Strong and Eco are configurations of the same RNNoise model. Strong deepens the mask; Eco updates the neural mask every 20 ms and may affect speech onsets. Single Analysis and ONNX are not available yet.","OK",this);
     };
     bypass.setTooltip("Pass the latency-aligned original; smooth transition. Neural state remains active.");
     compare.setTooltip("Listen to the aligned original, then switch back without losing reduction, width or gain settings.");
     for(juce::Component* c:std::initializer_list<juce::Component*>{&presets,&views,&profiles,&bypass,&compare,&reset,&undo,&settings,
-                          &status,&voice,&delta,&spectrum,&inputMeter,&outputMeter}) addAndMakeVisible(c);
+                          &status,&voice,&delta,&widthHint,&spectrum,&inputMeter,&outputMeter}) addAndMakeVisible(c);
     for(auto* label:{&status,&voice,&delta}) { label->setColour(juce::Label::textColourId,juce::Colour(0xffa8becc)); label->setFont(juce::Font(juce::FontOptions(13))); }
     voice.setColour(juce::Label::textColourId,juce::Colour(0xffe6ffff));
     status.setJustificationType(juce::Justification::centredLeft); voice.setJustificationType(juce::Justification::centred);
@@ -57,7 +62,7 @@ VocalPureEditor::VocalPureEditor(VocalPureProcessor& p)
     setResizable(true,true); setResizeLimits(800,448,1500,840); getConstrainer()->setFixedAspectRatio(1000.0/560);
     setSize(1000,560);
     SpectrumQueue::Frame stale; while(processor.engine.spectrum.pop(stale)) {}
-    processor.engine.spectrum.enabled.store(true); startTimerHz(30);
+    processor.engine.spectrum.enabled.store(true); timerCallback(); startTimerHz(30);
 }
 VocalPureEditor::~VocalPureEditor() { stopTimer(); processor.engine.spectrum.enabled.store(false); setLookAndFeel(nullptr); }
 void VocalPureEditor::saveUndo()
@@ -89,7 +94,7 @@ void VocalPureEditor::paint(juce::Graphics& g)
     const juce::Colour dark(0xff073c50),white(0xffecffff);
     text("V O C A L P U R E",42,65,400,40,28,dark);
     text("LOCAL NEURAL AUDIO",734,72,240,30,17,dark);
-    text("0.4.0",44,107,120,18,11,dark);
+    text(JucePlugin_VersionString,44,107,120,18,11,dark);
     text("RNNOISE PROFILE",40,219,235,26,17,white,juce::Justification::centred);
     text("ANALYSIS",40,332,144,22,15,white,juce::Justification::centred);
     text("WIDTH",196,332,94,22,15,white,juce::Justification::centred);
@@ -109,6 +114,7 @@ void VocalPureEditor::resized()
     place(undo,16,7,82,28); place(presets,112,7,330,28); place(compare,469,7,225,28);
     place(settings,732,7,74,28); place(bypass,845,7,140,28);
     place(reset,131,155,52,46); place(width,196,354,94,105);
+    place(widthHint,166,459,154,20);
     place(profiles,40,252,235,57);
     place(reduction,324,126,400,340); place(voice,365,466,315,20);
     place(spectrum,747,211,226,226); place(views,780,459,165,26);
@@ -136,7 +142,9 @@ void VocalPureEditor::timerCallback()
     else if(error==3) message="Invalid input samples removed";
     else message="RNNoise ready  /  "+juce::String(processor.engine.reportedLatency.load())+" samples latency  /  "+(in<1e-7f || emptyTicks>=15?"No audio input":"Audio active");
     status.setText(message,juce::dontSendNotification);
-    width.setEnabled(processor.getTotalNumInputChannels()==2);
+    const bool stereo=processor.getTotalNumInputChannels()==2;
+    width.setEnabled(stereo && !dry);
+    widthHint.setText(!stereo?"MONO: NO EFFECT":dry?"ORIGINAL: INACTIVE":"STEREO WIDTH",juce::dontSendNotification);
     if(selectedPreset>=0)
     {
         const auto preset=factoryPresets[size_t(selectedPreset)];

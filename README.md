@@ -1,4 +1,4 @@
-# VocalPure 0.4.0 — Fase 4
+# VocalPure 0.4.1 — Fase 6 em validacao
 
 Plugin C++20/JUCE com **RNNoise real e processamento local**, VST3/Standalone mono/estereo.
 Reducao 0..100%, ganhos -24..+24 dB, transicoes suaves, bypass alinhado, VAD neural,
@@ -28,6 +28,13 @@ O script compila e executa testes, sem instalar o plugin no sistema.
 - [Medicoes locais de CPU](docs/benchmarks/phase4-results.md)
 - [Validacao basica no DaVinci Resolve](docs/validation-resolve.md)
 - [Fase 5A: avaliacao ONNX e comparacao local](docs/phase5.md)
+- [Fase 6: candidato Windows, Width e distribuicao](docs/phase6.md)
+
+Width ajusta a diferenca entre os canais estereo: 0% mono, 100% abertura original,
+200% dobro do sinal lateral. Nao altera entrada mono nem dois canais identicos.
+A interface informa quando o controle esta inativo por mono ou Compare/Bypass.
+Pacote interno Windows: `./scripts/package_windows.ps1`; arquivos em `dist/`,
+com manifesto e verificacao SHA256. Sem instalacao automatica ou publicacao de release.
 
 Carregamento, reproducao mono, Compare/Bypass e restauracao de ajustes verificados no Resolve 21.
 DPDFNet ONNX de 48 kHz avaliado separadamente, com WAVs e medicoes locais; ainda nao integrado ao VST3.
