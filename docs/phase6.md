@@ -1,4 +1,9 @@
-# Fase 6 — candidato interno Windows 0.4.2
+# Fase 6 — pre-release Windows 0.4.3
+
+Atualizacao 0.4.3: VST3 anuncia `Fx|Restoration`; categoria conferida pelo teste
+que carrega o bundle real. Para atualizar a lista no Resolve, reinstalar a nova
+versao e refazer a varredura. O host pode manter a categoria anterior em cache.
+Codigo original disponibilizado sob AGPL-3.0-only por autorizacao do titular.
 
 Iniciada em 22/10/2026, por solicitacao do usuario. Esta etapa prepara a versao
 RNNoise existente para testes de distribuicao. Nao depende de disponibilizar ONNX:
@@ -106,9 +111,7 @@ erros retornados pelo sistema e a falha de commit injetada, mantendo o backup.
 - Exportacao real de timeline, preservacao de inicio/cauda e null test de PDC no host.
 - Automacao de timeline, taxas/layouts e buffers no Resolve, incluindo estereo real.
 - Homologacao do assistente/UAC e retorno em maquina Windows limpa, sem ferramentas de desenvolvimento.
-- Escolha de modalidade de licenciamento pelo titular e revisao da distribuicao
-  completa. O LICENSE do projeto ainda nao define essa modalidade; copiar avisos
-  para o ZIP nao equivale a liberar uma distribuicao publica/comercial.
+- Preservar os avisos e fontes correspondentes completos na distribuicao AGPLv3.
 - Assinatura de codigo e pacote publico apos os itens anteriores.
 - macOS/AU continua sem compilacao ou homologacao neste ambiente Windows.
 

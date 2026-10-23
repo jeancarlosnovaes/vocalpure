@@ -22,6 +22,7 @@ int main(int argc,char** argv)
         format.findAllTypesForFile(descriptions,juce::String::fromUTF8(argv[1]));
         require(descriptions.size()==1,"VST3 scan did not find exactly one plugin");
         require(descriptions[0]->name=="VocalPure","Unexpected plugin name");
+        require(descriptions[0]->category.contains("Restoration"),"VST3 must advertise the Restoration category");
         std::cout<<"VST3 scanned: "<<descriptions[0]->name<<" "<<descriptions[0]->version<<'\n';
         for(int rate:{44100,48000,96000}) for(int channels:{1,2}) for(float width:{0.0f,0.5f,1.0f})
         {
