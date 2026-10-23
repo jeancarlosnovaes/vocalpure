@@ -1,4 +1,4 @@
-# Fase 6 — candidato interno Windows 0.4.1
+# Fase 6 — candidato interno Windows 0.4.2
 
 Iniciada em 22/10/2026, por solicitacao do usuario. Esta etapa prepara a versao
 RNNoise existente para testes de distribuicao. Nao depende de disponibilizar ONNX:
@@ -42,7 +42,7 @@ do gerador de recursos agora acompanha os metadados de versao em builds incremen
 - Imagens do editor geradas pelo JUCE e inspecionadas em 1000x560 e 800x448,
   com estados mono/estereo/Compare. Arquivos locais em `tests/output/phase6-ui`.
 - **VST3 exportado carregado de verdade**, por um host minimo JUCE separado do
-  codigo do plugin. Varredura encontra VocalPure 0.4.1, seguida de 18 instancias
+  codigo do plugin. Varredura encontra VocalPure 0.4.2, seguida de 18 instancias
   para 3 taxas x 2 layouts x 3 valores de Width. Verifica serializacao/restauracao,
   parametros exportados, audio em reducao 0% e atraso reportado 960/1176/2560 amostras.
   Isso testa o bundle e o wrapper; nao substitui a compensacao de atraso do Resolve.
@@ -55,27 +55,61 @@ e um ZIP em `dist/`, com identificacao de versao e horario. `-SkipBuild` usa os
 binarios ja compilados, mas ainda exige os testes. Versao dos dois executaveis
 e conferida contra CMake antes de empacotar.
 
-Inclui o bundle VST3 inteiro, Standalone, guia em portugues, avisos/licencas
+Inclui o bundle VST3 inteiro, Standalone, instalador nativo, guia em portugues, avisos/licencas
 disponiveis das dependencias e manifesto de arquivos com SHA256. O script confere
 contagem, tamanho e hash dos arquivos dentro do ZIP final e gera SHA256 do ZIP.
 Nao inclui Python, ONNX, testes, gravacoes do usuario ou credenciais. O manifesto
 registra commit e se havia alteracoes nao commitadas. Os pacotes nao entram no Git.
 
-Esse e um **pacote interno de teste, sem assinatura e sem instalador automatico**.
-Nao instala/substitui arquivos do sistema, nem publica release no GitHub.
-Instalacao manual e retorno a versao anterior constam em `package-readme.txt`.
+Esse e um **pacote interno de teste, sem assinatura digital**. O empacotamento
+nao instala/substitui arquivos do sistema nem publica release no GitHub.
+O assistente `Instalar VocalPure.exe` e executado separadamente pelo usuario, apos
+extrair o ZIP. Exige administrador e oferece instalar/atualizar ou restaurar.
+Instalacao automatica/manual e retorno constam em `package-readme.txt`.
+
+## Instalador e runtime na 0.4.2
+
+O assistente instala apenas o VST3 na pasta Common Files/VST3, obtida pela API de
+pastas conhecidas do Windows. Standalone continua portatil. Nao fecha aplicativos,
+nao altera suas configuracoes e nao possui desinstalacao automatica nesta versao.
+Os backups ficam na pasta conhecida ProgramData/VocalPure/Backups, fora da varredura.
+
+Antes de substituir: confere o manifesto SHA256 do payload (integridade, nao prova
+de autenticidade), rejeita arquivos ausentes/extras, caminhos relativos invalidos,
+links/junctions e arquivo em uso. Copia para uma pasta temporaria e verifica os bytes.
+Se ha versao anterior, gera e verifica um backup completo. A substituicao usa renomeacoes
+entre pastas irmas; se o commit falhar, retorna a pasta anterior. O retorno automatico
+foi testado por uma falha injetada entre essas renomeacoes. Prefixo e pai resolvido
+sao conferidos antes de cada limpeza recursiva; nao ha remocao generica de pastas.
+Um mutex impede duas transacoes simultaneas na mesma sessao Windows. Backups nao sao apagados automaticamente.
+
+`installer_transactions` passou com primeira instalacao, atualizacao, backup exato,
+restauracao, arquivos antigos removidos da nova versao (preservados no backup), falha
+injetada, hash conhecido SHA256, payload corrompido/incompleto/extra, caminhos duplicados,
+traversal, arquivo bloqueado, concorrencia e destino com espacos/Unicode. Testes criam
+pastas novas em `build/installer-tests`; nao instalam no sistema. Durante empacotamento,
+o mesmo core confere o bundle real do pacote em modo somente leitura.
+
+Plugin, Standalone e instalador passaram a usar CRT estatico. Inspecao com dumpbin
+nao encontrou dependencias de VCRUNTIME/MSVCP/UCRT redistribuivel nos tres binarios;
+restam DLLs do sistema Windows. Isso nao substitui homologacao em uma maquina limpa.
+O dialogo/UAC do instalador nao foi exercitado nesta rodada. O usuario informou ja
+ter testado no Resolve e solicitou nao usar o aplicativo; nao foram inferidos resultados
+especificos de exportacao, PDC ou automacao a partir desse relato.
+Falha de energia, encerramento forcado no meio da troca e instalacoes a partir de
+sessoes Windows diferentes nao foram homologados. A recuperacao testada cobre
+erros retornados pelo sistema e a falha de commit injetada, mantendo o backup.
 
 ## Pendencias para concluir a Fase 6
 
-- Repetir a homologacao da 0.4.1 no Resolve; a validacao anterior e da 0.4.0.
+- Registrar o escopo do teste informado pelo usuario; a validacao automatizada anterior no Resolve e da 0.4.0.
 - Exportacao real de timeline, preservacao de inicio/cauda e null test de PDC no host.
 - Automacao de timeline, taxas/layouts e buffers no Resolve, incluindo estereo real.
-- Instalacao e retorno de versao em ambiente limpo; verificar dependencias de runtime
-  em Windows sem as ferramentas de desenvolvimento deste computador.
+- Homologacao do assistente/UAC e retorno em maquina Windows limpa, sem ferramentas de desenvolvimento.
 - Escolha de modalidade de licenciamento pelo titular e revisao da distribuicao
   completa. O LICENSE do projeto ainda nao define essa modalidade; copiar avisos
   para o ZIP nao equivale a liberar uma distribuicao publica/comercial.
-- Instalador definitivo, assinatura de codigo e pacote publico apos os itens anteriores.
+- Assinatura de codigo e pacote publico apos os itens anteriores.
 - macOS/AU continua sem compilacao ou homologacao neste ambiente Windows.
 
 Veja `validation-resolve.md` para a evidencia anterior e `phase5.md` para ONNX.

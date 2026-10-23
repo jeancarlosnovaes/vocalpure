@@ -1,4 +1,4 @@
-# VocalPure 0.4.1 — Fase 6 em validacao
+# VocalPure 0.4.2 — Fase 6 em validacao
 
 Plugin C++20/JUCE com **RNNoise real e processamento local**, VST3/Standalone mono/estereo.
 Reducao 0..100%, ganhos -24..+24 dB, transicoes suaves, bypass alinhado, VAD neural,
@@ -34,7 +34,9 @@ Width ajusta a diferenca entre os canais estereo: 0% mono, 100% abertura origina
 200% dobro do sinal lateral. Nao altera entrada mono nem dois canais identicos.
 A interface informa quando o controle esta inativo por mono ou Compare/Bypass.
 Pacote interno Windows: `./scripts/package_windows.ps1`; arquivos em `dist/`,
-com manifesto e verificacao SHA256. Sem instalacao automatica ou publicacao de release.
+com manifesto, verificacao SHA256 e assistente `Instalar VocalPure.exe`.
+O assistente instala/atualiza o VST3 com backup e permite restaurar a versao anterior.
+Sem publicacao de release. Plugin, Standalone e instalador usam runtime C++ estatico.
 
 Carregamento, reproducao mono, Compare/Bypass e restauracao de ajustes verificados no Resolve 21.
 DPDFNet ONNX de 48 kHz avaliado separadamente, com WAVs e medicoes locais; ainda nao integrado ao VST3.

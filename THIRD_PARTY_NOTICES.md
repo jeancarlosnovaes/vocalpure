@@ -5,6 +5,9 @@
 - VST3 SDK incorporado ao JUCE: consultar licencas na copia exata de
   external/JUCE/modules/juce_audio_processors/format_types/VST3_SDK.
 - CMake portatil (ferramenta de build, nao runtime): https://cmake.org/licensing/.
+- Windows 0.4.2: runtime MSVC/C++ ligado estaticamente ao plugin, Standalone e
+  instalador. Inspecao de imports nao encontrou DLLs VC++ redistribuiveis como
+  dependencia; isso nao define os termos de distribuicao do projeto/dependencias.
 - RNNoise v0.1.1 integrado, incluindo pesos originais em src/rnn_data.c sob o COPYING do repositorio.
   Commit 6cbfd53eb348a8d394e0757b4025c6ded34eb2b6; BSD-3-Clause no COPYING e avisos BSD por arquivo.
   https://github.com/xiph/rnnoise/tree/v0.1.1. Preservar COPYING e avisos do fonte ao distribuir.

@@ -23,6 +23,8 @@ O processamento e offline/local; rede e usada apenas para obter dependencias de 
 
 macOS: Xcode/SDK e CMake; `bash scripts/build_macos.sh` configura universal Intel/Apple Silicon,
 VST3/AU/Standalone. Essa plataforma ainda nao foi testada. Assinatura/notarizacao nao configuradas.
-Nao ha instalador automatico. `./scripts/package_windows.ps1` gera um pacote interno
-Windows x64 com VST3 completo, Standalone, instrucoes e hashes, apos exigir a regressao.
+`./scripts/package_windows.ps1` gera um pacote interno Windows x64 com VST3 completo,
+Standalone, assistente de instalacao/backup/restauracao, instrucoes e hashes apos a regressao.
+O instalador requer permissao de administrador; nao e executado pelo script de build/pacote.
+MSVC usa runtime estatico para evitar dependencia do Visual C++ Redistributable.
 Detalhes e pendencias em `phase6.md`. ONNX Runtime/Python nao sao dependencias do plugin.

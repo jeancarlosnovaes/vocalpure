@@ -16,7 +16,8 @@ if (!$version) { throw 'Cannot determine project version' }
 $bundle = Join-Path $root 'build/VocalPure_artefacts/Release/VST3/VocalPure.vst3'
 $exe = Join-Path $root 'build/VocalPure_artefacts/Release/Standalone/VocalPure.exe'
 $binary = Join-Path $bundle 'Contents/x86_64-win/VocalPure.vst3'
-foreach ($file in @($binary, $exe)) {
+$installer = Join-Path $root 'build/Installer/Release/Instalar VocalPure.exe'
+foreach ($file in @($binary, $exe, $installer)) {
     if (!(Test-Path -LiteralPath $file)) { throw "Missing binary: $file" }
     if ((Get-Item -LiteralPath $file).VersionInfo.ProductVersion -ne $version) {
         throw "Binary version does not match $version : $file"
@@ -31,6 +32,15 @@ New-Item -ItemType Directory -Path $stage | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $stage 'VST3'), (Join-Path $stage 'Standalone'), (Join-Path $stage 'Licenses') | Out-Null
 Copy-Item -LiteralPath $bundle -Destination (Join-Path $stage 'VST3') -Recurse
 Copy-Item -LiteralPath $exe -Destination (Join-Path $stage 'Standalone')
+Copy-Item -LiteralPath $installer -Destination $stage
+$stageBundle = Join-Path $stage 'VST3/VocalPure.vst3'
+$payloadLines = @('# VocalPure VST3 SHA256') + @(Get-ChildItem -LiteralPath $stageBundle -Recurse -File | Sort-Object FullName | ForEach-Object {
+    $relative = $_.FullName.Substring($stageBundle.Length + 1).Replace('\','/')
+    "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $relative"
+})
+[IO.File]::WriteAllText((Join-Path $stage 'VST3/payload.sha256'), ($payloadLines -join "`n") + "`n", [Text.UTF8Encoding]::new($false))
+& (Join-Path $root 'build/Release/VocalPureInstallerTests.exe') --verify-payload $stageBundle
+if ($LASTEXITCODE -ne 0) { throw 'Native installer rejected the packaged payload' }
 Copy-Item -LiteralPath (Join-Path $root 'docs/package-readme.txt') -Destination (Join-Path $stage 'LEIA-ME.txt')
 Copy-Item -LiteralPath (Join-Path $root 'THIRD_PARTY_NOTICES.md'), (Join-Path $root 'LICENSE') -Destination (Join-Path $stage 'Licenses')
 Copy-Item -LiteralPath (Join-Path $root 'external/JUCE/LICENSE.md') -Destination (Join-Path $stage 'Licenses/JUCE-LICENSE.md')
@@ -56,7 +66,8 @@ $files = @(Get-ChildItem -LiteralPath $stage -Recurse -File | Sort-Object FullNa
 })
 $manifest = [ordered]@{product='VocalPure'; version=$version; platform='Windows x64';
     channel='internal-test'; signed=$false; source_commit=$commit; source_dirty=$dirty;
-    backend='RNNoise 0.1.1'; onnx_included=$false; tests='foundation + exported VST3 smoke'; files=$files}
+    backend='RNNoise 0.1.1'; onnx_included=$false; runtime_mode='static MSVC CRT';
+    tests='foundation + installer transactions + exported VST3 smoke'; files=$files}
 $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $stage 'package.json') -Encoding utf8
 Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive
 # Verify the bytes INSIDE the final ZIP, not just the staging folder.

@@ -1,6 +1,6 @@
 # Arquitetura e plano
 
-**Estado atual: Fase 4 no motor; Fase 5A avaliada; Fase 6 iniciada na versao RNNoise 0.4.1.**
+**Estado atual: Fase 4 no motor; Fase 5A avaliada; Fase 6 com candidato RNNoise 0.4.2 e instalador interno.**
 Veja `phase4.md` para o motor e `phase5.md` para contrato, resultados e limites do
 modelo candidato. `phase6.md` registra o candidato interno e pendencias de distribuicao.
 ONNX ainda fora do VST3. O restante registra o plano original.

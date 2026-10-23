@@ -1,5 +1,13 @@
 # Validacao
 
+**Fase 6 / 0.4.2:** adicionada suite nativa `installer_transactions`: primeira instalacao,
+atualizacao sem mesclar arquivos antigos, backup/restauracao exatos, falha de commit
+simulada, checksums, payload alterado/incompleto, caminhos invalidos, arquivo bloqueado,
+operacao simultanea e destino Unicode. Tudo em pastas novas dentro de `build/installer-tests`.
+Empacotamento verifica o payload real usando o mesmo core do instalador, sem instala-lo.
+O usuario informou ter testado no Resolve e solicitou nao usa-lo nesta etapa; nao foram
+atribuidos resultados especificos de exportacao/PDC a esse relato sem detalhes adicionais.
+
 **Fase 6 / 0.4.1:** regressao de Width ampliada para as tres taxas, mono/estereo,
 Compare/Bypass e disponibilidade no editor. Novo `vst3_smoke` carrega o bundle real
 em host JUCE minimo e confere layouts, parametros, estado, audio e latencia reportada.

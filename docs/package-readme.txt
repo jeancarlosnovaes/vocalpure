@@ -3,10 +3,25 @@ VocalPure - pacote interno de teste para Windows x64
 Conteudo:
   VST3/VocalPure.vst3 : plugin completo (uma pasta, nao apenas o arquivo interno).
   Standalone/VocalPure.exe : aplicativo independente.
+  Instalar VocalPure.exe : instala/atualiza o VST3 ou restaura o backup anterior.
   package.json : versao, commit e hashes dos arquivos.
   Licenses : avisos do projeto e das dependencias.
 
-Instalacao no Resolve:
+Instalacao com assistente:
+1. Extraia TODO o ZIP para uma pasta. Nao execute apenas o EXE dentro do ZIP.
+2. Feche o Resolve e outros editores de audio.
+3. Abra Instalar VocalPure.exe. O Windows solicita permissao de administrador
+   porque o destino e a pasta de plugins compartilhada do sistema.
+4. Escolha Instalar / atualizar. O instalador confere os hashes do VST3 e, se
+   houver uma versao anterior, guarda um backup verificado antes de substituir.
+5. Reabra o Resolve e confira a versao do plugin na interface.
+6. Para voltar, feche os editores, abra novamente o instalador e escolha
+   Restaurar versao anterior. O backup fica em C:/ProgramData/VocalPure/Backups
+   na configuracao padrao do Windows. Cada substituicao conserva o estado anterior.
+   A primeira instalacao, sem versao preexistente, nao cria backup anterior.
+7. O aplicativo Standalone fica na pasta do pacote; nao e instalado pelo assistente.
+
+Instalacao manual alternativa:
 1. Feche o Resolve antes de substituir um plugin carregado.
 2. Se ja houver VocalPure instalado, guarde uma copia da pasta antiga em outro
    local, fora das pastas de varredura VST3, para poder voltar a essa versao.
@@ -38,7 +53,8 @@ Escopo deste pacote:
   RNNoise local; sem Python, ONNX ou download de modelos durante o uso.
   Taxas: 44.1, 48 e 96 kHz. Mono/estereo. Atraso: 20 ms em 48 kHz e
   26.67 ms nas outras duas taxas, alem do atraso do dispositivo/host.
-  Pacote de teste interno, sem assinatura e sem instalador automatico.
+  Pacote de teste interno, com assistente de instalacao sem assinatura digital.
+  Plugin, Standalone e instalador compilados com runtime C++ estatico.
   Nao e uma declaracao de conclusao da homologacao no Resolve nem de liberacao
   comercial. Modalidade de licenciamento/distribuicao publica ainda pendente.
 
