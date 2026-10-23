@@ -1,5 +1,8 @@
 # VocalPure 0.4.2 — Fase 6 em validacao
 
+Codigo original licenciado sob GNU AGPLv3 (AGPL-3.0-only), conforme LICENSE.
+Pre-release Windows sem assinatura digital; homologacao do assistente em Windows limpo pendente.
+
 Plugin C++20/JUCE com **RNNoise real e processamento local**, VST3/Standalone mono/estereo.
 Reducao 0..100%, ganhos -24..+24 dB, transicoes suaves, bypass alinhado, VAD neural,
 medidores reais, reset, estado de sessao e interface redimensionavel.

@@ -1,5 +1,10 @@
 # Dependencias
 
+Codigo original do VocalPure: GNU AGPLv3 (AGPL-3.0-only), autorizado pelo titular.
+Nesta pre-release aberta, JUCE e usado sob AGPLv3 e os arquivos do VST3 SDK sob
+a alternativa GPLv3 indicada em seus avisos, preservando licencas por arquivo.
+Fontes correspondentes do projeto, JUCE e RNNoise acompanham os binarios na release.
+
 - JUCE 8.0.6: licenciamento dual AGPLv3/comercial. Texto exato em external/JUCE/LICENSE.md;
   https://github.com/juce-framework/JUCE/blob/8.0.6/LICENSE.md. Distribuicao deve atender a uma modalidade.
 - VST3 SDK incorporado ao JUCE: consultar licencas na copia exata de

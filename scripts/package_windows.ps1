@@ -1,4 +1,4 @@
-param([switch]$SkipBuild)
+param([switch]$SkipBuild, [ValidateSet('internal-test','prerelease')][string]$Channel = 'internal-test')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 if (!$SkipBuild) {
@@ -25,7 +25,7 @@ foreach ($file in @($binary, $exe, $installer)) {
 }
 $dist = Join-Path $root 'dist'
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
-$name = "VocalPure-$version-Windows-x64-internal-$(Get-Date -Format 'yyyyMMdd-HHmmss-fff')"
+$name = "VocalPure-$version-Windows-x64-$Channel-$(Get-Date -Format 'yyyyMMdd-HHmmss-fff')"
 $stage = Join-Path $dist $name
 $archive = "$stage.zip"
 New-Item -ItemType Directory -Path $stage | Out-Null
@@ -65,7 +65,7 @@ $files = @(Get-ChildItem -LiteralPath $stage -Recurse -File | Sort-Object FullNa
         sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
 })
 $manifest = [ordered]@{product='VocalPure'; version=$version; platform='Windows x64';
-    channel='internal-test'; signed=$false; source_commit=$commit; source_dirty=$dirty;
+    channel=$Channel; signed=$false; source_commit=$commit; source_dirty=$dirty;
     backend='RNNoise 0.1.1'; onnx_included=$false; runtime_mode='static MSVC CRT';
     tests='foundation + installer transactions + exported VST3 smoke'; files=$files}
 $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $stage 'package.json') -Encoding utf8

@@ -1,4 +1,4 @@
-VocalPure - pacote interno de teste para Windows x64
+VocalPure - pre-release de teste para Windows x64
 
 Conteudo:
   VST3/VocalPure.vst3 : plugin completo (uma pasta, nao apenas o arquivo interno).
@@ -53,9 +53,10 @@ Escopo deste pacote:
   RNNoise local; sem Python, ONNX ou download de modelos durante o uso.
   Taxas: 44.1, 48 e 96 kHz. Mono/estereo. Atraso: 20 ms em 48 kHz e
   26.67 ms nas outras duas taxas, alem do atraso do dispositivo/host.
-  Pacote de teste interno, com assistente de instalacao sem assinatura digital.
+  Pre-release, com assistente de instalacao sem assinatura digital.
   Plugin, Standalone e instalador compilados com runtime C++ estatico.
-  Nao e uma declaracao de conclusao da homologacao no Resolve nem de liberacao
-  comercial. Modalidade de licenciamento/distribuicao publica ainda pendente.
+  Homologacao do assistente em Windows limpo ainda pendente.
+  Codigo original sob GNU AGPLv3 (AGPL-3.0-only). Fontes correspondentes completos
+  acompanham a release no GitHub; terceiros preservam suas respectivas licencas.
 
 Projeto e documentacao: https://github.com/jeancarlosnovaes/vocalpure
