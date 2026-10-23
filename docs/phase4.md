@@ -76,6 +76,7 @@ Audios do usuario ficam somente em `tests/output`, fora do Git.
 Validacao em DAW e audicao comparativa permanecem separadas dos testes de motor.
 O Resolve 21 foi aberto em um projeto novo `VocalPure Validation 0.4.0`; a tentativa
 de importacao foi cancelada apos falha da automacao do seletor de arquivos. Nenhum
-carregamento do VST3, reproducao, exportacao ou restauracao de sessao foi validado no host.
+carregamento do VST3, reproducao, exportacao ou restauracao de sessao havia sido validado
+naquela tentativa. A verificacao posterior no host esta em `validation-resolve.md`.
 No standalone foram conferidos layout, abertura do seletor e troca real para Eco.
 ONNX e modelos adicionais pertencem a Fase 5 e nao foram integrados.

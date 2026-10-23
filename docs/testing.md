@@ -1,5 +1,9 @@
 # Validacao
 
+**Resolve (22/10/2026):** carregamento VST3, reproducao mono, visualizadores reais,
+Compare/Bypass e restauracao de perfil/posicao do controle apos reinicio do aplicativo
+verificados. Escopo e limites em `validation-resolve.md`; exportacao e PDC no host pendentes.
+
 **Fase 4:** ver `phase4.md` e `benchmarks/phase4-results.md`. Perfis RNNoise reais,
 reamostrador comparado com referencia anterior, metade das inferencias Eco,
 estereo/anti-fase/canal silencioso por taxa, blocos variaveis, migracao e 30 s simulados
