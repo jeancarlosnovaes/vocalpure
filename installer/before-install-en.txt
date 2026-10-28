@@ -1,0 +1,16 @@
+VocalPure 0.5.1
+
+Close VocalPure and your audio editors before installing or updating.
+
+Choose the standalone application, the VST3 plugin and/or the CLAP plugin.
+After installing plugins, rescan effects in your audio editor.
+
+Administrator approval is required to install shared plugins in
+C:\Program Files\Common Files. Windows will request this approval before
+the installation starts.
+
+The plugin has its own identity. Sessions saved with the old JUCE version
+are not imported automatically. An existing VST3 binary is backed up
+in the application's Backups folder before being replaced.
+
+Processing runs locally. Use headphones when monitoring a microphone.

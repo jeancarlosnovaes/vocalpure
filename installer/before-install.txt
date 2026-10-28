@@ -1,0 +1,11 @@
+VocalPure 0.5.1
+
+Feche o VocalPure e os editores de áudio antes de instalar ou atualizar.
+
+Você pode instalar o aplicativo independente, o plugin VST3 e o plugin CLAP.
+Após instalar os plugins, abra seu editor e refaça a busca de efeitos.
+
+A identidade do plugin é diferente da versão C++ anterior. Sessões antigas não são importadas automaticamente. Um binário VST3 existente é copiado para a pasta Backups do aplicativo antes de ser substituído. A instalação exige permissão de administrador para as pastas compartilhadas de plugins.
+
+O processamento é local. Para monitorar um microfone no aplicativo,
+use fones de ouvido e escolha a entrada e a saída na tela inicial.
